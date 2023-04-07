@@ -17,7 +17,9 @@ int ai_context_create(struct cen64_ai_context *context) {
   unsigned i;
 
   context->cur_frequency = 31985;
+  memset(&(context->ctx), 0, sizeof(context->ctx));
 
+#ifdef OPENAL_SUPPORT
   if ((context->dev = alcOpenDevice(NULL)) == NULL) {
     printf("Failed to open the OpenAL device.\n");
     return 1;
@@ -25,6 +27,7 @@ int ai_context_create(struct cen64_ai_context *context) {
 
   if ((context->ctx = alcCreateContext(context->dev, NULL)) == NULL) {
     printf("Failed to create an OpenAL context.\n");
+
     alcCloseDevice(context->dev);
     return 1;
   }
@@ -34,7 +37,9 @@ int ai_context_create(struct cen64_ai_context *context) {
   // Context/device is setup, create some buffers and a source.
   alGenBuffers(sizeof(context->buffers) / sizeof(*context->buffers),
     context->buffers);
+#endif
 
+#ifdef OPENAL_SUPPORT
   if (alGetError() != AL_NO_ERROR) {
     alcMakeContextCurrent(NULL);
     alcDestroyContext(context->ctx);
@@ -66,12 +71,14 @@ int ai_context_create(struct cen64_ai_context *context) {
 
   context->unqueued_buffers = sizeof(context->buffers) /
     sizeof(*context->buffers);
+#endif
 
   return 0;
 }
 
 // Destroys audio contexts made with ai_context_create.
 void ai_context_destroy(struct cen64_ai_context *context) {
+#ifdef OPENAL
   alDeleteSources(1, &context->source);
   alDeleteBuffers(sizeof(context->buffers) / sizeof(*context->buffers),
     context->buffers);
@@ -79,10 +86,12 @@ void ai_context_destroy(struct cen64_ai_context *context) {
   alcMakeContextCurrent(NULL);
   alcDestroyContext(context->ctx);
   alcCloseDevice(context->dev);
+#endif
 }
 
 // Generate buffers for some given frequency.
 int ai_switch_frequency(struct cen64_ai_context *context, ALint frequency) {
+#ifdef OPENAL
   alDeleteSources(1, &context->source);
   alDeleteBuffers(sizeof(context->buffers) / sizeof(*context->buffers),
     context->buffers);
@@ -95,7 +104,8 @@ int ai_switch_frequency(struct cen64_ai_context *context, ALint frequency) {
 
   context->unqueued_buffers = sizeof(context->buffers) /
     sizeof(*context->buffers);
-
+#endif
   return 0;
+
 }
 

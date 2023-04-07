@@ -62,6 +62,7 @@ struct pi_controller {
   size_t rom_size;
   const struct save_file *sram;
   const struct save_file *flashram_file;
+  BYTE* menuInterface;
   struct flashram flashram;
   struct is_viewer *is_viewer;
 

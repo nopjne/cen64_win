@@ -71,10 +71,11 @@ void ai_dma(struct ai_controller *ai) {
 
     else {
       ALuint buffer;
-      ALint val;
+      ALint val = 0;
 
+#ifdef OPENAL
       alGetSourcei(ai->ctx.source, AL_BUFFERS_PROCESSED, &val);
-
+#endif
       // XXX: Most games pick one frequency and stick with it.
       // Instead of paying garbage, try to dynamically switch
       // the frequency of the buffers that OpenAL is using.
@@ -91,9 +92,10 @@ void ai_dma(struct ai_controller *ai) {
 
       // Grab any buffers that have been processed (for reuse).
       if (val) {
+#ifdef OPENAL
         alSourceUnqueueBuffers(ai->ctx.source, val,
             ai->ctx.buffers + ai->ctx.unqueued_buffers);
-
+#endif
         ai->ctx.unqueued_buffers += val;
       }
 
@@ -133,15 +135,18 @@ void ai_dma(struct ai_controller *ai) {
 
         ai->ctx.unqueued_buffers--;
         buffer = ai->ctx.buffers[ai->ctx.unqueued_buffers];
-
+#ifdef OPENAL
         alBufferData(buffer, AL_FORMAT_STEREO16, buf_ptr, length, freq);
         alSourceQueueBuffers(ai->ctx.source, 1, &buffer);
+#endif
       }
-
+#ifdef OPENAL
       alGetSourcei(ai->ctx.source, AL_SOURCE_STATE, &val);
-
+#endif
+#ifdef OPENAL
       if (val != AL_PLAYING)
         alSourcePlay(ai->ctx.source);
+#endif
     }
   }
 
@@ -168,7 +173,9 @@ int ai_init(struct ai_controller *ai,
   ai->no_output = no_interface;
 
   if (!no_interface) {
+#ifdef OPENAL
     alGetError();
+#endif
 
     if (ai_context_create(&ai->ctx)) {
       ai->no_output = 1;

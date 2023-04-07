@@ -346,6 +346,8 @@ void dd_pi_write(void *opaque, uint32_t address) {
     dd->regs[DD_ASIC_CMD_STATUS] &= ~DD_STATUS_BM_INT;
     clear_dd_interrupt(dd->bus->vr4300);
   }
+  
+  //else if (address =>)
 }
 
 // Reads a word from the DD IPL ROM.

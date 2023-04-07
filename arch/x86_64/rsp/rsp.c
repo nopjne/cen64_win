@@ -240,7 +240,7 @@ int arch_rsp_init(struct rsp *rsp) { return 0; }
 #ifndef __SSSE3__
 __m128i rsp_vect_load_and_shuffle_operand(
   const uint16_t *src, unsigned element) {
-  __m128i v;
+  static __m128i v;
 
   switch(element) {
     case 0:
@@ -267,7 +267,7 @@ __m128i rsp_vect_load_and_shuffle_operand(
     case 5:
     case 6:
     case 7:
-      __asm__("" : "=x"(v)); /* Do not remove. */
+      //__asm__("" : "=x"(v)); /* Do not remove. */
       v = _mm_insert_epi16(v, src[element - 4], 0);
       v = _mm_insert_epi16(v, src[element - 0], 1);
       v = _mm_shufflelo_epi16(v, _MM_SHUFFLE(1,1,0,0));
@@ -283,7 +283,7 @@ __m128i rsp_vect_load_and_shuffle_operand(
     case 13:
     case 14:
     case 15:
-      __asm__("" : "=x"(v)); /* Do not remove. */
+      //__asm__("" : "=x"(v)); /* Do not remove. */
       v = _mm_insert_epi16(v, src[element - 8], 0);
       v = _mm_unpacklo_epi16(v, v);
       v = _mm_shuffle_epi32(v, _MM_SHUFFLE(0,0,0,0));
@@ -293,7 +293,8 @@ __m128i rsp_vect_load_and_shuffle_operand(
   #ifdef NDEBUG
   __builtin_unreachable();
   #else
-  __builtin_trap();
+  //__builtin_trap();
+ __debugbreak();
   #endif
 }
 #endif
@@ -380,12 +381,12 @@ void rsp_vload_group2(struct rsp *rsp, uint32_t addr, unsigned element,
     memcpy(&datahigh, rsp->mem + aligned_addr_hi, sizeof(datahigh));
 
     // TODO: Get rid of GNU extensions.
-    datalow = __builtin_bswap64(datalow);
-    datahigh = __builtin_bswap64(datahigh);
+    datalow = _byteswap_uint64(datalow);
+    datahigh = _byteswap_uint64(datahigh);
     datahigh >>= ((8 - offset) << 3);
     datalow <<= (offset << 3);
     datalow = datahigh | datalow;
-    datalow = __builtin_bswap64(datalow);
+    datalow = _byteswap_uint64(datalow);
 
     data = _mm_loadl_epi64((__m128i *) &datalow);
   }
