@@ -19,7 +19,7 @@ int is_viewer_init(struct is_viewer *is, int is_viewer_output) {
   is->output_buffer_conv = calloc(IS_BUFFER_SIZE * 3, 1);
   is->show_output = is_viewer_output;
 
-  is->cd = iconv_open("UTF-8", "EUC-JP");
+  //is->cd = iconv_open("UTF-8", "EUC-JP");
 
   if (is->buffer == NULL || is->output_buffer == NULL ||
       is->output_buffer_conv == NULL)
@@ -60,7 +60,7 @@ int write_is_viewer(struct is_viewer *is, uint32_t address, uint32_t word, uint3
         size_t outlen = 3 * len;
         char *outptr = (char *)is->output_buffer_conv;
         memset(is->output_buffer_conv, 0, IS_BUFFER_SIZE * 3);
-        iconv(is->cd, &inptr, &len, &outptr, &outlen);
+        //iconv(is->cd, &inptr, &len, &outptr, &outlen);
 
         if (is->show_output)
           printf("%s", is->output_buffer_conv);

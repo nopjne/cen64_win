@@ -77,7 +77,8 @@ int get_cic_seed(const uint8_t *rom_data, uint32_t *cic_seed) {
 
     default:
       *cic_seed = 0;
-      return 1;
+      *cic_seed = CIC_SEED_NUS_6102;
+      return 0;
   }
 
   return 0;

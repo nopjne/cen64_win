@@ -139,9 +139,9 @@ void device_destroy(struct cen64_device *device, const char *cart_path) {
 
   // Save profiling data, if any
   if (cart_path && has_profile_samples(device->vr4300)) {
-    char path[PATH_MAX];
-    snprintf(path, PATH_MAX, "%s.profile", cart_path);
-    path[PATH_MAX - 1] = '\0';
+    char path[MAX_PATH];
+    snprintf(path, sizeof(path), "%s.profile", cart_path);
+    path[sizeof(path) - 1] = '\0';
 
     FILE *f = fopen(path, "w");
     if (!f) {

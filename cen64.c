@@ -40,11 +40,17 @@ cen64_cold static int run_device(struct cen64_device *device, bool no_video);
 cen64_cold static CEN64_THREAD_RETURN_TYPE run_device_thread(void *opaque);
 
 // Called when another simulation instance is desired.
-int cen64_main(int argc, const char **argv) {
+int main(int argc, const char** argv) {
+    return cen64_main(argc, argv);
+}
+
+struct rom_file ddipl, ddrom, pifrom, cart;
+
+//int cen64_main(int argc, const char **argv) {
+int cen64_main(int argc, const char** argv) {
   struct controller controller[4] = { { 0, }, };
 	struct cen64_options options = default_cen64_options;
   options.controller = controller;
-  struct rom_file ddipl, ddrom, pifrom, cart;
   const struct dd_variant *dd_variant;
   struct cen64_mem cen64_device_mem;
   struct cen64_device *device;
@@ -57,7 +63,7 @@ int cen64_main(int argc, const char **argv) {
   struct is_viewer is, *is_in = NULL;
 
 #ifdef _WIN32
-  check_start_from_explorer();
+  //check_start_from_explorer();
 #endif
 
   if (!cart_db_is_well_formed()) {
@@ -336,6 +342,7 @@ int check_extensions(void) {
     return 0;
 }
 
+FILE* AddressLogger = NULL;
 // Load any ROM images required for simulation.
 int load_roms(const char *ddipl_path, const char *ddrom_path,
   const char *pifrom_path, const char *cart_path, struct rom_file *ddipl,
@@ -343,6 +350,7 @@ int load_roms(const char *ddipl_path, const char *ddrom_path,
   struct rom_file *ddrom, struct rom_file *pifrom, struct rom_file *cart) {
   memset(ddipl, 0, sizeof(*ddipl));
 
+  AddressLogger = fopen("c:\\hw\\Cen64AddrLog.bin","wb");
   if (ddipl_path && open_rom_file(ddipl_path, ddipl)) {
     printf("Failed to load DD IPL ROM: %s.\n", ddipl_path);
 

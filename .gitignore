@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 # Other data #
 /data
 
@@ -104,3 +105,104 @@ debug/
 *.sav
 bin/
 release/
+=======
+# Other data #
+/data
+
+# Build files #
+/build
+
+# Swap files #
+*.swp
+
+# Qt files #
+/debugger/cen64d
+/debugger/*.o
+
+/debugger/moc*_*.cpp
+/debugger/*.pro.user*
+/debugger/Makefile
+
+/debugger/ui_main_window.h
+
+# Compiled source/binaries #
+######################
+*.com
+*.bat
+*.class
+*.dll
+*.exe
+*.o
+*.so
+*.deb
+*.rpm
+*.msi
+*.msm
+*.msp
+*.dat
+*.elf
+*.pkg
+
+# Archives #
+######################
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+*.bzip
+*.bz2
+*.xz
+*.lzma
+*.cab
+
+# Backups #
+######################
+*.bak
+
+# Logs and databases #
+######################
+*.log
+*.sql
+*.sqlite
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+*~
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+[Tt]humbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.AppleDouble
+.LSOverride
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.directory
+
+# CVS #
+######################
+/CVS/*
+*/CVS/*
+.cvsignore
+*/.cvsignore
+
+# Mercurial/HG #
+######################
+/.hg/*
+*/.hg/*
+.hgignore
+
+# SVN #
+######################
+.svn/
+>>>>>>> Stashed changes

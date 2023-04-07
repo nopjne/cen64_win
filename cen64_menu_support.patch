@@ -1,0 +1,3230 @@
+diff --git a/.appveyor.yml b/.appveyor.yml
+index 93098a8..c544a00 100644
+--- a/.appveyor.yml
++++ b/.appveyor.yml
+@@ -1,40 +1,40 @@
+-version: "{branch}-ci-{build}"
+-image: Visual Studio 2015
+-
+-branches:
+-  only:
+-  - master
+-
+-environment:
+-  matrix:
+-  - build: msvc
+-    platform: x64
+-    CMAKEFILE: "Visual Studio 14 Win64"
+-  - build: mingw-w64
+-    platform: x64
+-    CMAKEFILE: "MSYS Makefiles"
+-
+-install:
+-- appveyor DownloadFile https://cfhcable.dl.sourceforge.net/project/gnuwin32/libiconv/1.9.2-1/libiconv-1.9.2-1.exe
+-- libiconv-1.9.2-1.exe /SILENT /SUPPRESSMSGBOXES
+-- appveyor DownloadFile http://openal-soft.org/openal-binaries/openal-soft-1.17.2-bin.zip
+-- 7z x openal-soft-1.17.2-bin.zip
+-
+-before_build:
+-- set PATH=%PATH%;C:\projects\cen64\openal-soft-1.17.2-bin
+-- set PATH=%PATH:C:\Program Files\Git\bin;=%
+-- set PATH=%PATH:C:\Program Files\Git\usr\bin;=%
+-- if "%build%"=="msvc" set PATH=%PATH%;C:\Program Files (x86)\GnuWin32\bin
+-- if "%build%"=="mingw-w64" set PATH=%PATH%;C:\msys64\mingw64;C:\msys64\mingw64\bin;C:\msys64\mingw64\lib;C:\msys64\mingw64\include;C:\msys64\usr\bin\;
+-- call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" %platform%
+-- if "%platform%"=="X64" set platform=x64
+-
+-build_script:
+-- mkdir build
+-- cd build
+-- cmake .. -G "%CMAKEFILE%"
+-- if "%build%"=="msvc" MSBuild .\cen64.sln /p:Configuration=Release /p:Platform=%platform%
+-- if "%build%"=="mingw-w64" bash -lc "cd /c/projects/cen64/build; make all"
+-
+-test_script:
+-- ctest -C Release --verbose
++version: "{branch}-ci-{build}"
++image: Visual Studio 2015
++
++branches:
++  only:
++  - master
++
++environment:
++  matrix:
++  - build: msvc
++    platform: x64
++    CMAKEFILE: "Visual Studio 14 Win64"
++  - build: mingw-w64
++    platform: x64
++    CMAKEFILE: "MSYS Makefiles"
++
++install:
++- appveyor DownloadFile https://cfhcable.dl.sourceforge.net/project/gnuwin32/libiconv/1.9.2-1/libiconv-1.9.2-1.exe
++- libiconv-1.9.2-1.exe /SILENT /SUPPRESSMSGBOXES
++- appveyor DownloadFile http://openal-soft.org/openal-binaries/openal-soft-1.17.2-bin.zip
++- 7z x openal-soft-1.17.2-bin.zip
++
++before_build:
++- set PATH=%PATH%;C:\projects\cen64\openal-soft-1.17.2-bin
++- set PATH=%PATH:C:\Program Files\Git\bin;=%
++- set PATH=%PATH:C:\Program Files\Git\usr\bin;=%
++- if "%build%"=="msvc" set PATH=%PATH%;C:\Program Files (x86)\GnuWin32\bin
++- if "%build%"=="mingw-w64" set PATH=%PATH%;C:\msys64\mingw64;C:\msys64\mingw64\bin;C:\msys64\mingw64\lib;C:\msys64\mingw64\include;C:\msys64\usr\bin\;
++- call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" %platform%
++- if "%platform%"=="X64" set platform=x64
++
++build_script:
++- mkdir build
++- cd build
++- cmake .. -G "%CMAKEFILE%"
++- if "%build%"=="msvc" MSBuild .\cen64.sln /p:Configuration=Release /p:Platform=%platform%
++- if "%build%"=="mingw-w64" bash -lc "cd /c/projects/cen64/build; make all"
++
++test_script:
++- ctest -C Release --verbose
+diff --git a/.gitattributes b/.gitattributes
+index ace1c5e..0ac5e18 100644
+--- a/.gitattributes
++++ b/.gitattributes
+@@ -1,19 +1,19 @@
+-# Set the default behavior for files
+-* text=lf
+-
+-# Explicitly declare text files you want to always be normalized and converted
+-# to native line endings on checkout
+-*.md text
+-*.txt text
+-*.c text
+-*.h text
+-*.s text
+-*.cmake text
+-*.pro text
+-*.ui text
+-*.asm text
+-*.in text
+-
+-# Denote all files that are truly binary and should not be modified
+-*.pdf binary
+-*.png binary
++# Set the default behavior for files
++* text=lf
++
++# Explicitly declare text files you want to always be normalized and converted
++# to native line endings on checkout
++*.md text
++*.txt text
++*.c text
++*.h text
++*.s text
++*.cmake text
++*.pro text
++*.ui text
++*.asm text
++*.in text
++
++# Denote all files that are truly binary and should not be modified
++*.pdf binary
++*.png binary
+diff --git a/.github/workflows/debian-linux.yml b/.github/workflows/debian-linux.yml
+index 21f9f2c..bedc1c4 100644
+--- a/.github/workflows/debian-linux.yml
++++ b/.github/workflows/debian-linux.yml
+@@ -1,21 +1,21 @@
+-name: debian-linux
+-
+-on:
+-  push:
+-  pull_request:
+-
+-jobs:
+-  build:
+-    runs-on: ubuntu-latest
+-    steps:
+-    - uses: actions/checkout@v2
+-    - name: Installing Dependencies
+-      run: |
+-        sudo apt-get update
+-        sudo apt-get install -y freeglut3 freeglut3-dev libglew1.5 libglew1.5-dev libglu1-mesa libglu1-mesa-dev libgl1-mesa-glx libgl1-mesa-dev libpulse-dev libalut-dev mesa-common-dev libopenal-dev
+-
+-    - name: Build
+-      run: |
+-        mkdir build && cd build
+-        cmake -DCMAKE_BUILD_TYPE=Release ..
++name: debian-linux
++
++on:
++  push:
++  pull_request:
++
++jobs:
++  build:
++    runs-on: ubuntu-latest
++    steps:
++    - uses: actions/checkout@v2
++    - name: Installing Dependencies
++      run: |
++        sudo apt-get update
++        sudo apt-get install -y freeglut3 freeglut3-dev libglew1.5 libglew1.5-dev libglu1-mesa libglu1-mesa-dev libgl1-mesa-glx libgl1-mesa-dev libpulse-dev libalut-dev mesa-common-dev libopenal-dev
++
++    - name: Build
++      run: |
++        mkdir build && cd build
++        cmake -DCMAKE_BUILD_TYPE=Release ..
+         make VERBOSE=1 -j4
+\ No newline at end of file
+* Unmerged path .github/workflows/msys2-windows.yml
+* Unmerged path .gitignore
+diff --git a/.travis.yml b/.travis.yml
+index 5ce3e43..797ace4 100644
+--- a/.travis.yml
++++ b/.travis.yml
+@@ -1,43 +1,43 @@
+-notifications:
+-  email: false
+-
+-language: c
+-dist: bionic
+-osx_image: xcode10.1
+-
+-branches:
+-  only:
+-  - master
+-
+-compiler:
+-  - gcc
+-  - clang
+-os:
+-  - linux
+-  - osx
+-
+-matrix:
+-  exclude:
+-    - os: osx
+-      compiler: gcc
+-
+-addons:
+-  apt:
+-    packages:
+-    - freeglut3
+-    - freeglut3-dev
+-    - libglew1.5
+-    - libglew1.5-dev
+-    - libglu1-mesa
+-    - libglu1-mesa-dev
+-    - libgl1-mesa-glx
+-    - libgl1-mesa-dev
+-    - libpulse-dev
+-    - libalut-dev
+-
+-before_script:
+-  - mkdir release && cd release
+-
+-script:
+-  - cmake ..
+-  - make
++notifications:
++  email: false
++
++language: c
++dist: bionic
++osx_image: xcode10.1
++
++branches:
++  only:
++  - master
++
++compiler:
++  - gcc
++  - clang
++os:
++  - linux
++  - osx
++
++matrix:
++  exclude:
++    - os: osx
++      compiler: gcc
++
++addons:
++  apt:
++    packages:
++    - freeglut3
++    - freeglut3-dev
++    - libglew1.5
++    - libglew1.5-dev
++    - libglu1-mesa
++    - libglu1-mesa-dev
++    - libgl1-mesa-glx
++    - libgl1-mesa-dev
++    - libpulse-dev
++    - libalut-dev
++
++before_script:
++  - mkdir release && cd release
++
++script:
++  - cmake ..
++  - make
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 88bb895..5a693ad 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -23,7 +23,7 @@ else(APPLE)
+ endif(APPLE)
+ 
+ find_package(Iconv REQUIRED)
+-find_package(OpenAL REQUIRED)
++#find_package(OpenAL)
+ find_package(Threads REQUIRED)
+ 
+ # If using GCC, configure it accordingly.
+@@ -242,7 +242,7 @@ include_directories(${PROJECT_SOURCE_DIR})
+ include_directories(${PROJECT_SOURCE_DIR}/arch/${CEN64_ARCH_DIR})
+ include_directories(${PROJECT_SOURCE_DIR}/os/common)
+ include_directories(${ICONV_INCLUDE_DIR})
+-include_directories(${OPENAL_INCLUDE_DIR})
++#include_directories(${OPENAL_INCLUDE_DIR})
+ include_directories(${OPENGL_INCLUDE_DIR})
+ 
+ #
+@@ -479,7 +479,7 @@ add_executable(cen64
+ 
+ target_link_libraries(cen64
+ 	${EXTRA_OS_LIBS}
+-  ${OPENAL_LIBRARY}
++# ${OPENAL_LIBRARY}
+   ${OPENGL_gl_LIBRARY}
+   ${ICONV_LIBRARIES}
+   ${VIDEO_LIB}
+diff --git a/CONTRIBUTORS b/CONTRIBUTORS
+index 2cb334e..a92846b 100644
+--- a/CONTRIBUTORS
++++ b/CONTRIBUTORS
+@@ -1,42 +1,42 @@
+-krom:              Thank you for your indisposable clean-room, micro-test
+-                   ROMs. These, especially the RSP vector ROMs, have saved me
+-                   hours of hair-pulling. And, with my impatience, there's no
+-                   way I would have ever come close to developing something so
+-                   intricate.
+-
+-Iconoclast:        Although we hardly ever see eye-to-eye with regards to
+-                   development practices, your zilmar-spec RSP plugin was
+-                   instrumental to getting CEN64 to the point where it is
+-                   today. Without a basis of comparison, the initial SSE-
+-                   ification of the RSP algorithms would have been even more
+-                   testing than it already was.
+-
+-mikeryan:          For single-handedly implementing virtually all of the save-
+-                   related bits and pieces, fixing hard-to-catch PIF bugs, your
+-                   work on the SM5, OSX fixes, advice on locking down cen64.com,
+-                   and all the other help you've provided. Consider this message
+-                   to be an effective coupon for a beer on me!
+-
+-OzOnE/LuigiBlood   For your fantastic documentation and efforts on reversing
+-                   the 64DD. Without your efforts, there's no way that CEN64
+-                   would have 64DD support.
+-
+-izy:               For all your optimization work - from the VR4300 to RSP,
+-                   audio, and beyond! CEN64's performance on x86 has improved
+-                   due to your work!
+-
+-jrra:              For your work on MBC3/transfer pak and the various other
+-                   things you've done to help the project!
+-
+-simer:             Thanks for your work on the cart database! (whether it be
+-Snowstorm64:       populating entries, shifting from the use of cart title to
+-                   cart ID, or adding additional save types)
+-
+-AIO:               Thank you for your RSP/SSE optimizations. It's always nice
+-                   to see someone else's approaches to vectorizing some of the
+-                   RSP instructions!
+-
+-#n64dev:           Thank you to everyone else that's helped out in the past:
+-                   marshallh, mikeryan, balrog, and anyone else that I'm
+-                   forgetting.
+-
++krom:              Thank you for your indisposable clean-room, micro-test
++                   ROMs. These, especially the RSP vector ROMs, have saved me
++                   hours of hair-pulling. And, with my impatience, there's no
++                   way I would have ever come close to developing something so
++                   intricate.
++
++Iconoclast:        Although we hardly ever see eye-to-eye with regards to
++                   development practices, your zilmar-spec RSP plugin was
++                   instrumental to getting CEN64 to the point where it is
++                   today. Without a basis of comparison, the initial SSE-
++                   ification of the RSP algorithms would have been even more
++                   testing than it already was.
++
++mikeryan:          For single-handedly implementing virtually all of the save-
++                   related bits and pieces, fixing hard-to-catch PIF bugs, your
++                   work on the SM5, OSX fixes, advice on locking down cen64.com,
++                   and all the other help you've provided. Consider this message
++                   to be an effective coupon for a beer on me!
++
++OzOnE/LuigiBlood   For your fantastic documentation and efforts on reversing
++                   the 64DD. Without your efforts, there's no way that CEN64
++                   would have 64DD support.
++
++izy:               For all your optimization work - from the VR4300 to RSP,
++                   audio, and beyond! CEN64's performance on x86 has improved
++                   due to your work!
++
++jrra:              For your work on MBC3/transfer pak and the various other
++                   things you've done to help the project!
++
++simer:             Thanks for your work on the cart database! (whether it be
++Snowstorm64:       populating entries, shifting from the use of cart title to
++                   cart ID, or adding additional save types)
++
++AIO:               Thank you for your RSP/SSE optimizations. It's always nice
++                   to see someone else's approaches to vectorizing some of the
++                   RSP instructions!
++
++#n64dev:           Thank you to everyone else that's helped out in the past:
++                   marshallh, mikeryan, balrog, and anyone else that I'm
++                   forgetting.
++
+diff --git a/LICENSE b/LICENSE
+index a8a0066..48720ff 100644
+--- a/LICENSE
++++ b/LICENSE
+@@ -1,25 +1,25 @@
+-Copyright (c) 2015, Tyler J. Stachecki
+-All rights reserved.
+-
+-Redistribution and use in source and binary forms, with or without
+-modification, are permitted provided that the following conditions are met:
+-    * Redistributions of source code must retain the above copyright
+-      notice, this list of conditions and the following disclaimer.
+-    * Redistributions in binary form must reproduce the above copyright
+-      notice, this list of conditions and the following disclaimer in the
+-      documentation and/or other materials provided with the distribution.
+-    * Neither the name of the Tyler J. Stachecki nor the names of its
+-      contributors may be used to endorse or promote products derived from
+-      this software without specific prior written permission.
+-
+-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+-DISCLAIMED. IN NO EVENT SHALL TYLER J. STACHECKI BE LIABLE FOR ANY DIRECT,
+-INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+-BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+-OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-
++Copyright (c) 2015, Tyler J. Stachecki
++All rights reserved.
++
++Redistribution and use in source and binary forms, with or without
++modification, are permitted provided that the following conditions are met:
++    * Redistributions of source code must retain the above copyright
++      notice, this list of conditions and the following disclaimer.
++    * Redistributions in binary form must reproduce the above copyright
++      notice, this list of conditions and the following disclaimer in the
++      documentation and/or other materials provided with the distribution.
++    * Neither the name of the Tyler J. Stachecki nor the names of its
++      contributors may be used to endorse or promote products derived from
++      this software without specific prior written permission.
++
++THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
++ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++DISCLAIMED. IN NO EVENT SHALL TYLER J. STACHECKI BE LIABLE FOR ANY DIRECT,
++INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
++BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
++DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
++OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
++NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
++EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++
+diff --git a/VERSION b/VERSION
+index be58634..13f6bca 100644
+--- a/VERSION
++++ b/VERSION
+@@ -1 +1 @@
+-0.3
++0.3
+diff --git a/ai/al.h b/ai/al.h
+new file mode 100644
+index 0000000..20bee55
+--- /dev/null
++++ b/ai/al.h
+@@ -0,0 +1,2 @@
++#define ALuint unsigned int
++#define ALint int
+\ No newline at end of file
+diff --git a/ai/alc.h b/ai/alc.h
+new file mode 100644
+index 0000000..75fc6b8
+--- /dev/null
++++ b/ai/alc.h
+@@ -0,0 +1,2 @@
++#define ALCdevice void*
++#define ALCcontext void*
+\ No newline at end of file
+diff --git a/ai/context.c b/ai/context.c
+index 84a16af..1898341 100644
+--- a/ai/context.c
++++ b/ai/context.c
+@@ -17,7 +17,9 @@ int ai_context_create(struct cen64_ai_context *context) {
+   unsigned i;
+ 
+   context->cur_frequency = 31985;
++  memset(&(context->ctx), 0, sizeof(context->ctx));
+ 
++#ifdef OPENAL_SUPPORT
+   if ((context->dev = alcOpenDevice(NULL)) == NULL) {
+     printf("Failed to open the OpenAL device.\n");
+     return 1;
+@@ -25,6 +27,7 @@ int ai_context_create(struct cen64_ai_context *context) {
+ 
+   if ((context->ctx = alcCreateContext(context->dev, NULL)) == NULL) {
+     printf("Failed to create an OpenAL context.\n");
++
+     alcCloseDevice(context->dev);
+     return 1;
+   }
+@@ -34,7 +37,9 @@ int ai_context_create(struct cen64_ai_context *context) {
+   // Context/device is setup, create some buffers and a source.
+   alGenBuffers(sizeof(context->buffers) / sizeof(*context->buffers),
+     context->buffers);
++#endif
+ 
++#ifdef OPENAL_SUPPORT
+   if (alGetError() != AL_NO_ERROR) {
+     alcMakeContextCurrent(NULL);
+     alcDestroyContext(context->ctx);
+@@ -66,12 +71,14 @@ int ai_context_create(struct cen64_ai_context *context) {
+ 
+   context->unqueued_buffers = sizeof(context->buffers) /
+     sizeof(*context->buffers);
++#endif
+ 
+   return 0;
+ }
+ 
+ // Destroys audio contexts made with ai_context_create.
+ void ai_context_destroy(struct cen64_ai_context *context) {
++#ifdef OPENAL
+   alDeleteSources(1, &context->source);
+   alDeleteBuffers(sizeof(context->buffers) / sizeof(*context->buffers),
+     context->buffers);
+@@ -79,10 +86,12 @@ void ai_context_destroy(struct cen64_ai_context *context) {
+   alcMakeContextCurrent(NULL);
+   alcDestroyContext(context->ctx);
+   alcCloseDevice(context->dev);
++#endif
+ }
+ 
+ // Generate buffers for some given frequency.
+ int ai_switch_frequency(struct cen64_ai_context *context, ALint frequency) {
++#ifdef OPENAL
+   alDeleteSources(1, &context->source);
+   alDeleteBuffers(sizeof(context->buffers) / sizeof(*context->buffers),
+     context->buffers);
+@@ -95,7 +104,8 @@ int ai_switch_frequency(struct cen64_ai_context *context, ALint frequency) {
+ 
+   context->unqueued_buffers = sizeof(context->buffers) /
+     sizeof(*context->buffers);
+-
++#endif
+   return 0;
++
+ }
+ 
+diff --git a/ai/controller.c b/ai/controller.c
+index 60f1517..1173db5 100644
+--- a/ai/controller.c
++++ b/ai/controller.c
+@@ -71,10 +71,11 @@ void ai_dma(struct ai_controller *ai) {
+ 
+     else {
+       ALuint buffer;
+-      ALint val;
++      ALint val = 0;
+ 
++#ifdef OPENAL
+       alGetSourcei(ai->ctx.source, AL_BUFFERS_PROCESSED, &val);
+-
++#endif
+       // XXX: Most games pick one frequency and stick with it.
+       // Instead of paying garbage, try to dynamically switch
+       // the frequency of the buffers that OpenAL is using.
+@@ -91,9 +92,10 @@ void ai_dma(struct ai_controller *ai) {
+ 
+       // Grab any buffers that have been processed (for reuse).
+       if (val) {
++#ifdef OPENAL
+         alSourceUnqueueBuffers(ai->ctx.source, val,
+             ai->ctx.buffers + ai->ctx.unqueued_buffers);
+-
++#endif
+         ai->ctx.unqueued_buffers += val;
+       }
+ 
+@@ -133,15 +135,18 @@ void ai_dma(struct ai_controller *ai) {
+ 
+         ai->ctx.unqueued_buffers--;
+         buffer = ai->ctx.buffers[ai->ctx.unqueued_buffers];
+-
++#ifdef OPENAL
+         alBufferData(buffer, AL_FORMAT_STEREO16, buf_ptr, length, freq);
+         alSourceQueueBuffers(ai->ctx.source, 1, &buffer);
++#endif
+       }
+-
++#ifdef OPENAL
+       alGetSourcei(ai->ctx.source, AL_SOURCE_STATE, &val);
+-
++#endif
++#ifdef OPENAL
+       if (val != AL_PLAYING)
+         alSourcePlay(ai->ctx.source);
++#endif
+     }
+   }
+ 
+@@ -168,7 +173,9 @@ int ai_init(struct ai_controller *ai,
+   ai->no_output = no_interface;
+ 
+   if (!no_interface) {
++#ifdef OPENAL
+     alGetError();
++#endif
+ 
+     if (ai_context_create(&ai->ctx)) {
+       ai->no_output = 1;
+diff --git a/arch/x86_64/rsp/rsp.c b/arch/x86_64/rsp/rsp.c
+index 559431a..f2c4e36 100644
+--- a/arch/x86_64/rsp/rsp.c
++++ b/arch/x86_64/rsp/rsp.c
+@@ -240,7 +240,7 @@ int arch_rsp_init(struct rsp *rsp) { return 0; }
+ #ifndef __SSSE3__
+ __m128i rsp_vect_load_and_shuffle_operand(
+   const uint16_t *src, unsigned element) {
+-  __m128i v;
++  static __m128i v;
+ 
+   switch(element) {
+     case 0:
+@@ -267,7 +267,7 @@ __m128i rsp_vect_load_and_shuffle_operand(
+     case 5:
+     case 6:
+     case 7:
+-      __asm__("" : "=x"(v)); /* Do not remove. */
++      //__asm__("" : "=x"(v)); /* Do not remove. */
+       v = _mm_insert_epi16(v, src[element - 4], 0);
+       v = _mm_insert_epi16(v, src[element - 0], 1);
+       v = _mm_shufflelo_epi16(v, _MM_SHUFFLE(1,1,0,0));
+@@ -283,7 +283,7 @@ __m128i rsp_vect_load_and_shuffle_operand(
+     case 13:
+     case 14:
+     case 15:
+-      __asm__("" : "=x"(v)); /* Do not remove. */
++      //__asm__("" : "=x"(v)); /* Do not remove. */
+       v = _mm_insert_epi16(v, src[element - 8], 0);
+       v = _mm_unpacklo_epi16(v, v);
+       v = _mm_shuffle_epi32(v, _MM_SHUFFLE(0,0,0,0));
+@@ -293,7 +293,8 @@ __m128i rsp_vect_load_and_shuffle_operand(
+   #ifdef NDEBUG
+   __builtin_unreachable();
+   #else
+-  __builtin_trap();
++  //__builtin_trap();
++ __debugbreak();
+   #endif
+ }
+ #endif
+@@ -380,12 +381,12 @@ void rsp_vload_group2(struct rsp *rsp, uint32_t addr, unsigned element,
+     memcpy(&datahigh, rsp->mem + aligned_addr_hi, sizeof(datahigh));
+ 
+     // TODO: Get rid of GNU extensions.
+-    datalow = __builtin_bswap64(datalow);
+-    datahigh = __builtin_bswap64(datahigh);
++    datalow = _byteswap_uint64(datalow);
++    datahigh = _byteswap_uint64(datahigh);
+     datahigh >>= ((8 - offset) << 3);
+     datalow <<= (offset << 3);
+     datalow = datahigh | datalow;
+-    datalow = __builtin_bswap64(datalow);
++    datalow = _byteswap_uint64(datalow);
+ 
+     data = _mm_loadl_epi64((__m128i *) &datalow);
+   }
+diff --git a/cen64.c b/cen64.c
+index 51014a4..0be17d1 100644
+--- a/cen64.c
++++ b/cen64.c
+@@ -40,11 +40,17 @@ cen64_cold static int run_device(struct cen64_device *device, bool no_video);
+ cen64_cold static CEN64_THREAD_RETURN_TYPE run_device_thread(void *opaque);
+ 
+ // Called when another simulation instance is desired.
+-int cen64_main(int argc, const char **argv) {
++int main(int argc, const char** argv) {
++    return cen64_main(argc, argv);
++}
++
++struct rom_file ddipl, ddrom, pifrom, cart;
++
++//int cen64_main(int argc, const char **argv) {
++int cen64_main(int argc, const char** argv) {
+   struct controller controller[4] = { { 0, }, };
+ 	struct cen64_options options = default_cen64_options;
+   options.controller = controller;
+-  struct rom_file ddipl, ddrom, pifrom, cart;
+   const struct dd_variant *dd_variant;
+   struct cen64_mem cen64_device_mem;
+   struct cen64_device *device;
+@@ -57,7 +63,7 @@ int cen64_main(int argc, const char **argv) {
+   struct is_viewer is, *is_in = NULL;
+ 
+ #ifdef _WIN32
+-  check_start_from_explorer();
++  //check_start_from_explorer();
+ #endif
+ 
+   if (!cart_db_is_well_formed()) {
+@@ -336,6 +342,7 @@ int check_extensions(void) {
+     return 0;
+ }
+ 
++FILE* AddressLogger = NULL;
+ // Load any ROM images required for simulation.
+ int load_roms(const char *ddipl_path, const char *ddrom_path,
+   const char *pifrom_path, const char *cart_path, struct rom_file *ddipl,
+@@ -343,6 +350,7 @@ int load_roms(const char *ddipl_path, const char *ddrom_path,
+   struct rom_file *ddrom, struct rom_file *pifrom, struct rom_file *cart) {
+   memset(ddipl, 0, sizeof(*ddipl));
+ 
++  AddressLogger = fopen("c:\\hw\\Cen64AddrLog.bin","wb");
+   if (ddipl_path && open_rom_file(ddipl_path, ddipl)) {
+     printf("Failed to load DD IPL ROM: %s.\n", ddipl_path);
+ 
+diff --git a/dd/controller.c b/dd/controller.c
+index 90a8c59..baa0fcf 100644
+--- a/dd/controller.c
++++ b/dd/controller.c
+@@ -346,6 +346,8 @@ void dd_pi_write(void *opaque, uint32_t address) {
+     dd->regs[DD_ASIC_CMD_STATUS] &= ~DD_STATUS_BM_INT;
+     clear_dd_interrupt(dd->bus->vr4300);
+   }
++  
++  //else if (address =>)
+ }
+ 
+ // Reads a word from the DD IPL ROM.
+diff --git a/debugger/LICENSE b/debugger/LICENSE
+index a8a0066..48720ff 100644
+--- a/debugger/LICENSE
++++ b/debugger/LICENSE
+@@ -1,25 +1,25 @@
+-Copyright (c) 2015, Tyler J. Stachecki
+-All rights reserved.
+-
+-Redistribution and use in source and binary forms, with or without
+-modification, are permitted provided that the following conditions are met:
+-    * Redistributions of source code must retain the above copyright
+-      notice, this list of conditions and the following disclaimer.
+-    * Redistributions in binary form must reproduce the above copyright
+-      notice, this list of conditions and the following disclaimer in the
+-      documentation and/or other materials provided with the distribution.
+-    * Neither the name of the Tyler J. Stachecki nor the names of its
+-      contributors may be used to endorse or promote products derived from
+-      this software without specific prior written permission.
+-
+-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+-DISCLAIMED. IN NO EVENT SHALL TYLER J. STACHECKI BE LIABLE FOR ANY DIRECT,
+-INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+-BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+-OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-
++Copyright (c) 2015, Tyler J. Stachecki
++All rights reserved.
++
++Redistribution and use in source and binary forms, with or without
++modification, are permitted provided that the following conditions are met:
++    * Redistributions of source code must retain the above copyright
++      notice, this list of conditions and the following disclaimer.
++    * Redistributions in binary form must reproduce the above copyright
++      notice, this list of conditions and the following disclaimer in the
++      documentation and/or other materials provided with the distribution.
++    * Neither the name of the Tyler J. Stachecki nor the names of its
++      contributors may be used to endorse or promote products derived from
++      this software without specific prior written permission.
++
++THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
++ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++DISCLAIMED. IN NO EVENT SHALL TYLER J. STACHECKI BE LIABLE FOR ANY DIRECT,
++INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
++BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
++DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
++OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
++NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
++EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++
+diff --git a/debugger/README b/debugger/README
+index 2fd8ce4..74c34b8 100644
+--- a/debugger/README
++++ b/debugger/README
+@@ -1,5 +1,5 @@
+-This is CEN64's Qt-based debugger.
+-
+-It is inspired by Presence's Qt frontend for CEN64:
+-https://github.com/dh4/cen64-qt
+-
++This is CEN64's Qt-based debugger.
++
++It is inspired by Presence's Qt frontend for CEN64:
++https://github.com/dh4/cen64-qt
++
+diff --git a/debugger/disassembly_view.cpp b/debugger/disassembly_view.cpp
+index 74166af..ab0b86e 100644
+--- a/debugger/disassembly_view.cpp
++++ b/debugger/disassembly_view.cpp
+@@ -1,45 +1,45 @@
+-//
+-// disassembly_view.cpp: CEN64D disassembly view (MVC).
+-//
+-// CEN64D: Cycle-Accurate Nintendo 64 Debugger
+-// Copyright (C) 2015, Tyler J. Stachecki.
+-//
+-// This file is subject to the terms and conditions defined in
+-// 'LICENSE', which is part of this source code package.
+-//
+-
+-#include "disassembly_view.h"
+-#include <QBrush>
+-#include <QFont>
+-#include <QFontMetrics>
+-#include <QPainter>
+-#include <QSize>
+-
+-DisassemblyView::DisassemblyView() {
+-  QFont monospacedFont("Courier New");
+-  monospacedFont.setFixedPitch(true);
+-  monospacedFont.setPointSize(10);
+-  setFont(monospacedFont);
+-
+-  QFontMetrics metrics(monospacedFont);
+-  fontWidth = metrics.width('0');
+-  fontHeight = metrics.height();
+-}
+-
+-DisassemblyView::~DisassemblyView() {
+-}
+-
+-void DisassemblyView::paintEvent(QPaintEvent* event) {
+-  QSize area = viewport()->size();
+-
+-  // TODO: Fonts don't seem to render exactly
+-  // where we want them, so add a fudge factor.
+-  float fudge = 2.0 / 3.0;
+-  unsigned start = fontHeight * fudge;
+-
+-  QPainter painter(viewport());
+-
+-  painter.fillRect(0, 0, area.width(), area.height(), QBrush(Qt::white));
+-  painter.drawText(1, start, "This is the disassembly view.");
+-}
+-
++//
++// disassembly_view.cpp: CEN64D disassembly view (MVC).
++//
++// CEN64D: Cycle-Accurate Nintendo 64 Debugger
++// Copyright (C) 2015, Tyler J. Stachecki.
++//
++// This file is subject to the terms and conditions defined in
++// 'LICENSE', which is part of this source code package.
++//
++
++#include "disassembly_view.h"
++#include <QBrush>
++#include <QFont>
++#include <QFontMetrics>
++#include <QPainter>
++#include <QSize>
++
++DisassemblyView::DisassemblyView() {
++  QFont monospacedFont("Courier New");
++  monospacedFont.setFixedPitch(true);
++  monospacedFont.setPointSize(10);
++  setFont(monospacedFont);
++
++  QFontMetrics metrics(monospacedFont);
++  fontWidth = metrics.width('0');
++  fontHeight = metrics.height();
++}
++
++DisassemblyView::~DisassemblyView() {
++}
++
++void DisassemblyView::paintEvent(QPaintEvent* event) {
++  QSize area = viewport()->size();
++
++  // TODO: Fonts don't seem to render exactly
++  // where we want them, so add a fudge factor.
++  float fudge = 2.0 / 3.0;
++  unsigned start = fontHeight * fudge;
++
++  QPainter painter(viewport());
++
++  painter.fillRect(0, 0, area.width(), area.height(), QBrush(Qt::white));
++  painter.drawText(1, start, "This is the disassembly view.");
++}
++
+diff --git a/debugger/main.cpp b/debugger/main.cpp
+index 94dbd78..dccff9b 100644
+--- a/debugger/main.cpp
++++ b/debugger/main.cpp
+@@ -1,21 +1,21 @@
+-//
+-// main.cpp: CEN64D entry point.
+-//
+-// CEN64D: Cycle-Accurate Nintendo 64 Debugger
+-// Copyright (C) 2015, Tyler J. Stachecki.
+-//
+-// This file is subject to the terms and conditions defined in
+-// 'LICENSE', which is part of this source code package.
+-//
+-
+-#include "main_window.h"
+-#include <QApplication>
+-
+-int main(int argc, char *argv[]) {
+-  QApplication a(argc, argv);
+-  MainWindow w;
+-  w.show();
+-
+-  return a.exec();
+-}
+-
++//
++// main.cpp: CEN64D entry point.
++//
++// CEN64D: Cycle-Accurate Nintendo 64 Debugger
++// Copyright (C) 2015, Tyler J. Stachecki.
++//
++// This file is subject to the terms and conditions defined in
++// 'LICENSE', which is part of this source code package.
++//
++
++#include "main_window.h"
++#include <QApplication>
++
++int main(int argc, char *argv[]) {
++  QApplication a(argc, argv);
++  MainWindow w;
++  w.show();
++
++  return a.exec();
++}
++
+diff --git a/debugger/main_window.cpp b/debugger/main_window.cpp
+index 86bfc71..d148fd3 100644
+--- a/debugger/main_window.cpp
++++ b/debugger/main_window.cpp
+@@ -1,87 +1,87 @@
+-//
+-// main_window.cpp: CEN64D main window.
+-//
+-// CEN64D: Cycle-Accurate Nintendo 64 Debugger
+-// Copyright (C) 2015, Tyler J. Stachecki.
+-//
+-// This file is subject to the terms and conditions defined in
+-// 'LICENSE', which is part of this source code package.
+-//
+-
+-#include "main_window.h"
+-#include "ui_main_window.h"
+-#include <QMessageBox>
+-#include <QKeySequence>
+-
+-MainWindow::MainWindow(QWidget *parent) :
+-  QMainWindow(parent), ui(new Ui::MainWindow) {
+-  ui->setupUi(this);
+-
+-  setupActions();
+-  setupMenuBar(menuBar());
+-
+-  memoryWindow = new MemoryWindow(viewMemoryWindowAction, false);
+-  rdpWindow = new RDPWindow(viewRDPWindowAction, false);
+-  rspWindow = new RSPWindow(viewRSPWindowAction, false);
+-  vr4300Window = new VR4300Window(viewVR4300WindowAction, true);
+-
+-  // Prevent any of the non-critical windows from keeping us alive.
+-  memoryWindow->setAttribute(Qt::WA_QuitOnClose, false);
+-  rdpWindow->setAttribute(Qt::WA_QuitOnClose, false);
+-  rspWindow->setAttribute(Qt::WA_QuitOnClose, false);
+-  vr4300Window->setAttribute(Qt::WA_QuitOnClose, false);
+-
+-  statusBar()->showMessage(tr("Connecting to host...."));
+-  networkHandle = new NetworkHandle(this);
+-  statusBar()->showMessage(tr("Debugger ready."));
+-}
+-
+-void MainWindow::setupActions() {
+-  fileQuitAction = new QAction(tr("&Quit"), this);
+-  fileQuitAction->setShortcuts(QKeySequence::Quit);
+-  fileQuitAction->setStatusTip("Quit the application.");
+-  connect(fileQuitAction, SIGNAL(triggered()), this, SLOT(close()));
+-
+-  viewMemoryWindowAction = new QAction(tr("&Memory"), this);
+-  viewMemoryWindowAction->setStatusTip("Toggle the memory view window.");
+-  viewMemoryWindowAction->setCheckable(true);
+-
+-  viewRDPWindowAction = new QAction(tr("R&DP"), this);
+-  viewRDPWindowAction->setStatusTip("Toggle the RDP view window.");
+-  viewRDPWindowAction->setCheckable(true);
+-
+-  viewRSPWindowAction = new QAction(tr("R&SP"), this);
+-  viewRSPWindowAction->setStatusTip("Toggle the RSP view window.");
+-  viewRSPWindowAction->setCheckable(true);
+-
+-  viewVR4300WindowAction = new QAction(tr("&VR4300"), this);
+-  viewVR4300WindowAction->setStatusTip("Toggle the VR4300 view window.");
+-  viewVR4300WindowAction->setCheckable(true);
+-
+-  helpAboutAction = new QAction(tr("&About"), this);
+-  helpAboutAction->setStatusTip("Show the about window.");
+-  connect(helpAboutAction, SIGNAL(triggered()), this, SLOT(showAboutWindow()));
+-}
+-
+-void MainWindow::setupMenuBar(QMenuBar *menuBar) {
+-  fileMenu = menuBar->addMenu(tr("&File"));
+-  viewMenu = menuBar->addMenu(tr("&View"));
+-  helpMenu = menuBar->addMenu(tr("&Help"));
+-
+-  fileMenu->addAction(fileQuitAction);
+-  viewMenu->addAction(viewMemoryWindowAction);
+-  viewMenu->addAction(viewRDPWindowAction);
+-  viewMenu->addAction(viewRSPWindowAction);
+-  viewMenu->addAction(viewVR4300WindowAction);
+-  helpMenu->addAction(helpAboutAction);
+-}
+-
+-void MainWindow::showAboutWindow() {
+-  QMessageBox::about(this, tr("About CEN64 Debugger"),
+-    tr("This is <b>CEN64</b>'s official debugger."));
+-}
+-
+-MainWindow::~MainWindow() {
+-  delete ui;
+-}
+-
++//
++// main_window.cpp: CEN64D main window.
++//
++// CEN64D: Cycle-Accurate Nintendo 64 Debugger
++// Copyright (C) 2015, Tyler J. Stachecki.
++//
++// This file is subject to the terms and conditions defined in
++// 'LICENSE', which is part of this source code package.
++//
++
++#include "main_window.h"
++#include "ui_main_window.h"
++#include <QMessageBox>
++#include <QKeySequence>
++
++MainWindow::MainWindow(QWidget *parent) :
++  QMainWindow(parent), ui(new Ui::MainWindow) {
++  ui->setupUi(this);
++
++  setupActions();
++  setupMenuBar(menuBar());
++
++  memoryWindow = new MemoryWindow(viewMemoryWindowAction, false);
++  rdpWindow = new RDPWindow(viewRDPWindowAction, false);
++  rspWindow = new RSPWindow(viewRSPWindowAction, false);
++  vr4300Window = new VR4300Window(viewVR4300WindowAction, true);
++
++  // Prevent any of the non-critical windows from keeping us alive.
++  memoryWindow->setAttribute(Qt::WA_QuitOnClose, false);
++  rdpWindow->setAttribute(Qt::WA_QuitOnClose, false);
++  rspWindow->setAttribute(Qt::WA_QuitOnClose, false);
++  vr4300Window->setAttribute(Qt::WA_QuitOnClose, false);
++
++  statusBar()->showMessage(tr("Connecting to host...."));
++  networkHandle = new NetworkHandle(this);
++  statusBar()->showMessage(tr("Debugger ready."));
++}
++
++void MainWindow::setupActions() {
++  fileQuitAction = new QAction(tr("&Quit"), this);
++  fileQuitAction->setShortcuts(QKeySequence::Quit);
++  fileQuitAction->setStatusTip("Quit the application.");
++  connect(fileQuitAction, SIGNAL(triggered()), this, SLOT(close()));
++
++  viewMemoryWindowAction = new QAction(tr("&Memory"), this);
++  viewMemoryWindowAction->setStatusTip("Toggle the memory view window.");
++  viewMemoryWindowAction->setCheckable(true);
++
++  viewRDPWindowAction = new QAction(tr("R&DP"), this);
++  viewRDPWindowAction->setStatusTip("Toggle the RDP view window.");
++  viewRDPWindowAction->setCheckable(true);
++
++  viewRSPWindowAction = new QAction(tr("R&SP"), this);
++  viewRSPWindowAction->setStatusTip("Toggle the RSP view window.");
++  viewRSPWindowAction->setCheckable(true);
++
++  viewVR4300WindowAction = new QAction(tr("&VR4300"), this);
++  viewVR4300WindowAction->setStatusTip("Toggle the VR4300 view window.");
++  viewVR4300WindowAction->setCheckable(true);
++
++  helpAboutAction = new QAction(tr("&About"), this);
++  helpAboutAction->setStatusTip("Show the about window.");
++  connect(helpAboutAction, SIGNAL(triggered()), this, SLOT(showAboutWindow()));
++}
++
++void MainWindow::setupMenuBar(QMenuBar *menuBar) {
++  fileMenu = menuBar->addMenu(tr("&File"));
++  viewMenu = menuBar->addMenu(tr("&View"));
++  helpMenu = menuBar->addMenu(tr("&Help"));
++
++  fileMenu->addAction(fileQuitAction);
++  viewMenu->addAction(viewMemoryWindowAction);
++  viewMenu->addAction(viewRDPWindowAction);
++  viewMenu->addAction(viewRSPWindowAction);
++  viewMenu->addAction(viewVR4300WindowAction);
++  helpMenu->addAction(helpAboutAction);
++}
++
++void MainWindow::showAboutWindow() {
++  QMessageBox::about(this, tr("About CEN64 Debugger"),
++    tr("This is <b>CEN64</b>'s official debugger."));
++}
++
++MainWindow::~MainWindow() {
++  delete ui;
++}
++
+diff --git a/debugger/memory_view.cpp b/debugger/memory_view.cpp
+index c0bbfeb..d9d1afb 100644
+--- a/debugger/memory_view.cpp
++++ b/debugger/memory_view.cpp
+@@ -1,93 +1,93 @@
+-//
+-// memory_view.cpp: CEN64D memory view (MVC).
+-//
+-// CEN64D: Cycle-Accurate Nintendo 64 Debugger
+-// Copyright (C) 2015, Tyler J. Stachecki.
+-//
+-// This file is subject to the terms and conditions defined in
+-// 'LICENSE', which is part of this source code package.
+-//
+-
+-#include "memory_view.h"
+-#include <QBrush>
+-#include <QFont>
+-#include <QFontMetrics>
+-#include <QPainter>
+-#include <QSize>
+-#include <cstdio>
+-
+-MemoryView::MemoryView(unsigned addressOctets) : addressOctets(addressOctets) {
+-  QFont monospacedFont("Courier New");
+-  monospacedFont.setFixedPitch(true);
+-  monospacedFont.setPointSize(10);
+-  setFont(monospacedFont);
+-
+-  QFontMetrics metrics(monospacedFont);
+-  fontWidth = metrics.width('0');
+-  fontHeight = metrics.height();
+-
+-  byteStart = 1 + (3 + addressOctets) * fontWidth;
+-
+-  // Create the format string.
+-  sprintf(formatstr, " 0x%%.%ullX", addressOctets);
+-}
+-
+-MemoryView::~MemoryView() {
+-}
+-
+-void MemoryView::paintEvent(QPaintEvent* event) {
+-  QSize area = viewport()->size();
+-  char buf[32];
+-  int i, j;
+-
+-  // TODO: Fonts don't seem to render exactly
+-  // where we want them, so add a fudge factor.
+-  float fudge = 2.0 / 3.0;
+-  unsigned start = fontHeight * fudge;
+-
+-  QPainter painter(viewport());
+-  QBrush clear = QBrush(Qt::white);
+-  QBrush shaded = QBrush(QColor(0xE8, 0xE8, 0xE8));
+-
+-  // Shade ever other line.
+-  painter.fillRect(0, 0, area.width(), area.height(), clear);
+-
+-  for (i = fontHeight; i < area.height(); i += fontHeight * 2)
+-    painter.fillRect(0, i, area.width(), fontHeight, shaded);
+-
+-  // Draw any values in the range.
+-  for (i = 0; i < area.height(); i += fontHeight) {
+-    sprintf(buf, formatstr, (unsigned long long) 0 +
+-      (i / fontHeight * bytesPerRow));
+-
+-    painter.drawText(1, start + i, buf);
+-
+-    for (j = 0; j < bytesPerRow; j++) {
+-      sprintf(buf, " %02X ", j);
+-      painter.drawText(byteStart + j  * fontWidth * 3, start + i, buf);
+-
+-      buf[1] = '\0';
+-      buf[0] = isprint(j) ? j : '.';
+-      painter.drawText(byteStart + bytesPerRow * 3 * fontWidth +
+-        (j + 1) * fontWidth, start + i, buf);
+-    }
+-  }
+-}
+-
+-void MemoryView::resizeEvent(QResizeEvent *event) {
+-  QSize area = viewport()->size();
+-  int i;
+-
+-  // Determine how many bytes we can cram in the row without having
+-  // to resort to horizontal sliders. Make sure that we keep the byte
+-  // count to a power of two for simplicity's sake.
+-  for (bytesPerRow = 1, i = 2; ; i *= 2) {
+-    int check = byteStart + i * 3 * fontWidth + (i + 1) * fontWidth;
+-
+-    if (check > area.width())
+-      break;
+-
+-    bytesPerRow = i;
+-  }
+-}
+-
++//
++// memory_view.cpp: CEN64D memory view (MVC).
++//
++// CEN64D: Cycle-Accurate Nintendo 64 Debugger
++// Copyright (C) 2015, Tyler J. Stachecki.
++//
++// This file is subject to the terms and conditions defined in
++// 'LICENSE', which is part of this source code package.
++//
++
++#include "memory_view.h"
++#include <QBrush>
++#include <QFont>
++#include <QFontMetrics>
++#include <QPainter>
++#include <QSize>
++#include <cstdio>
++
++MemoryView::MemoryView(unsigned addressOctets) : addressOctets(addressOctets) {
++  QFont monospacedFont("Courier New");
++  monospacedFont.setFixedPitch(true);
++  monospacedFont.setPointSize(10);
++  setFont(monospacedFont);
++
++  QFontMetrics metrics(monospacedFont);
++  fontWidth = metrics.width('0');
++  fontHeight = metrics.height();
++
++  byteStart = 1 + (3 + addressOctets) * fontWidth;
++
++  // Create the format string.
++  sprintf(formatstr, " 0x%%.%ullX", addressOctets);
++}
++
++MemoryView::~MemoryView() {
++}
++
++void MemoryView::paintEvent(QPaintEvent* event) {
++  QSize area = viewport()->size();
++  char buf[32];
++  int i, j;
++
++  // TODO: Fonts don't seem to render exactly
++  // where we want them, so add a fudge factor.
++  float fudge = 2.0 / 3.0;
++  unsigned start = fontHeight * fudge;
++
++  QPainter painter(viewport());
++  QBrush clear = QBrush(Qt::white);
++  QBrush shaded = QBrush(QColor(0xE8, 0xE8, 0xE8));
++
++  // Shade ever other line.
++  painter.fillRect(0, 0, area.width(), area.height(), clear);
++
++  for (i = fontHeight; i < area.height(); i += fontHeight * 2)
++    painter.fillRect(0, i, area.width(), fontHeight, shaded);
++
++  // Draw any values in the range.
++  for (i = 0; i < area.height(); i += fontHeight) {
++    sprintf(buf, formatstr, (unsigned long long) 0 +
++      (i / fontHeight * bytesPerRow));
++
++    painter.drawText(1, start + i, buf);
++
++    for (j = 0; j < bytesPerRow; j++) {
++      sprintf(buf, " %02X ", j);
++      painter.drawText(byteStart + j  * fontWidth * 3, start + i, buf);
++
++      buf[1] = '\0';
++      buf[0] = isprint(j) ? j : '.';
++      painter.drawText(byteStart + bytesPerRow * 3 * fontWidth +
++        (j + 1) * fontWidth, start + i, buf);
++    }
++  }
++}
++
++void MemoryView::resizeEvent(QResizeEvent *event) {
++  QSize area = viewport()->size();
++  int i;
++
++  // Determine how many bytes we can cram in the row without having
++  // to resort to horizontal sliders. Make sure that we keep the byte
++  // count to a power of two for simplicity's sake.
++  for (bytesPerRow = 1, i = 2; ; i *= 2) {
++    int check = byteStart + i * 3 * fontWidth + (i + 1) * fontWidth;
++
++    if (check > area.width())
++      break;
++
++    bytesPerRow = i;
++  }
++}
++
+diff --git a/debugger/memory_window.cpp b/debugger/memory_window.cpp
+index ffa0ac0..b75c357 100644
+--- a/debugger/memory_window.cpp
++++ b/debugger/memory_window.cpp
+@@ -1,28 +1,28 @@
+-//
+-// memory_window.cpp: Memory view window.
+-//
+-// CEN64D: Cycle-Accurate Nintendo 64 Debugger
+-// Copyright (C) 2015, Tyler J. Stachecki.
+-//
+-// This file is subject to the terms and conditions defined in
+-// 'LICENSE', which is part of this source code package.
+-//
+-
+-#include "memory_window.h"
+-
+-MemoryWindow::MemoryWindow(QAction *toggleAction, bool initiallyVisible)
+-  : ToggleWindow(tr("CEN64D: Memory"), toggleAction, initiallyVisible),
+-    memoryView(8) {
+-
+-  addressLabel.setText("Address: ");
+-
+-  layout.addWidget(&memoryView, 0, 1, 1, 2);
+-  layout.addWidget(&addressLabel, 1, 1);
+-  layout.addWidget(&addressLine, 1, 2);
+-
+-  setLayout(&layout);
+-}
+-
+-MemoryWindow::~MemoryWindow() {
+-}
+-
++//
++// memory_window.cpp: Memory view window.
++//
++// CEN64D: Cycle-Accurate Nintendo 64 Debugger
++// Copyright (C) 2015, Tyler J. Stachecki.
++//
++// This file is subject to the terms and conditions defined in
++// 'LICENSE', which is part of this source code package.
++//
++
++#include "memory_window.h"
++
++MemoryWindow::MemoryWindow(QAction *toggleAction, bool initiallyVisible)
++  : ToggleWindow(tr("CEN64D: Memory"), toggleAction, initiallyVisible),
++    memoryView(8) {
++
++  addressLabel.setText("Address: ");
++
++  layout.addWidget(&memoryView, 0, 1, 1, 2);
++  layout.addWidget(&addressLabel, 1, 1);
++  layout.addWidget(&addressLine, 1, 2);
++
++  setLayout(&layout);
++}
++
++MemoryWindow::~MemoryWindow() {
++}
++
+diff --git a/debugger/network_handle.cpp b/debugger/network_handle.cpp
+index 44b4aca..9a4af59 100644
+--- a/debugger/network_handle.cpp
++++ b/debugger/network_handle.cpp
+@@ -1,75 +1,75 @@
+-//
+-// network_handle.cpp: CEN64D network handle.
+-//
+-// CEN64D: Cycle-Accurate Nintendo 64 Debugger
+-// Copyright (C) 2015, Tyler J. Stachecki.
+-//
+-// This file is subject to the terms and conditions defined in
+-// 'LICENSE', which is part of this source code package.
+-//
+-
+-#include "network_handle.h"
+-#include <QMessageBox>
+-#include <QObject>
+-#include <QTranslator>
+-
+-#ifdef __WIN32__
+-#include <WinSock2.h>
+-#else
+-#include <arpa/inet.h>
+-#endif
+-
+-#include <cstdio>
+-
+-#define NETAPI_DEBUG_MAGIC 0x40544A53U // "@TJS"
+-#define NETAPI_DEBUG_VERSION 1U
+-
+-enum netapi_debug_request_type {
+-  NETAPI_DEBUG_ERROR,
+-  NETAPI_DEBUG_GET_PROTOCOL_VERSION,
+-  NETAPI_DEBUG_GET_VR4300_REGS,
+-};
+-
+-struct netapi_debug_request {
+-  quint32 magic;
+-  quint32 seq_id;
+-  quint32 length;
+-
+-  enum netapi_debug_request_type type;
+-  quint8 data[];
+-};
+-
+-NetworkHandle::NetworkHandle(QWidget *parent) : socket(parent) {
+-  socket.connectToHost("localhost", 64646);
+-  socket.waitForConnected();
+-}
+-
+-NetworkHandle::~NetworkHandle() {
+-}
+-
+-int NetworkHandle::getProtocolVersion() {
+-  return NETAPI_DEBUG_VERSION;
+-}
+-
+-int NetworkHandle::getRemoteProtocolVersion() {
+-  struct netapi_debug_request req, resp;
+-  qint32 version;
+-
+-  req.magic = htonl(NETAPI_DEBUG_MAGIC);
+-  req.length = htonl(sizeof(req));
+-  req.type = (enum netapi_debug_request_type) htonl(NETAPI_DEBUG_GET_PROTOCOL_VERSION);
+-  socket.write((char *) &req, sizeof(req));
+-
+-  socket.waitForReadyRead();
+-  socket.read((char *) &resp, sizeof(resp));
+-
+-  if (ntohl(resp.magic) != NETAPI_DEBUG_MAGIC ||
+-    ntohl(resp.type) != NETAPI_DEBUG_GET_PROTOCOL_VERSION ||
+-    ntohl(resp.length) != (sizeof(resp) + sizeof(quint32)))
+-    return -1;
+-
+-  socket.read((char *) &version, sizeof(version));
+-  fprintf(stderr, "got version: %u\n", ntohl(version));
+-  return ntohl(version);
+-}
+-
++//
++// network_handle.cpp: CEN64D network handle.
++//
++// CEN64D: Cycle-Accurate Nintendo 64 Debugger
++// Copyright (C) 2015, Tyler J. Stachecki.
++//
++// This file is subject to the terms and conditions defined in
++// 'LICENSE', which is part of this source code package.
++//
++
++#include "network_handle.h"
++#include <QMessageBox>
++#include <QObject>
++#include <QTranslator>
++
++#ifdef __WIN32__
++#include <WinSock2.h>
++#else
++#include <arpa/inet.h>
++#endif
++
++#include <cstdio>
++
++#define NETAPI_DEBUG_MAGIC 0x40544A53U // "@TJS"
++#define NETAPI_DEBUG_VERSION 1U
++
++enum netapi_debug_request_type {
++  NETAPI_DEBUG_ERROR,
++  NETAPI_DEBUG_GET_PROTOCOL_VERSION,
++  NETAPI_DEBUG_GET_VR4300_REGS,
++};
++
++struct netapi_debug_request {
++  quint32 magic;
++  quint32 seq_id;
++  quint32 length;
++
++  enum netapi_debug_request_type type;
++  quint8 data[];
++};
++
++NetworkHandle::NetworkHandle(QWidget *parent) : socket(parent) {
++  socket.connectToHost("localhost", 64646);
++  socket.waitForConnected();
++}
++
++NetworkHandle::~NetworkHandle() {
++}
++
++int NetworkHandle::getProtocolVersion() {
++  return NETAPI_DEBUG_VERSION;
++}
++
++int NetworkHandle::getRemoteProtocolVersion() {
++  struct netapi_debug_request req, resp;
++  qint32 version;
++
++  req.magic = htonl(NETAPI_DEBUG_MAGIC);
++  req.length = htonl(sizeof(req));
++  req.type = (enum netapi_debug_request_type) htonl(NETAPI_DEBUG_GET_PROTOCOL_VERSION);
++  socket.write((char *) &req, sizeof(req));
++
++  socket.waitForReadyRead();
++  socket.read((char *) &resp, sizeof(resp));
++
++  if (ntohl(resp.magic) != NETAPI_DEBUG_MAGIC ||
++    ntohl(resp.type) != NETAPI_DEBUG_GET_PROTOCOL_VERSION ||
++    ntohl(resp.length) != (sizeof(resp) + sizeof(quint32)))
++    return -1;
++
++  socket.read((char *) &version, sizeof(version));
++  fprintf(stderr, "got version: %u\n", ntohl(version));
++  return ntohl(version);
++}
++
+diff --git a/debugger/rdp_window.cpp b/debugger/rdp_window.cpp
+index fc65798..12d6138 100644
+--- a/debugger/rdp_window.cpp
++++ b/debugger/rdp_window.cpp
+@@ -1,19 +1,19 @@
+-//
+-// rdp_window.cpp: RDP view window.
+-//
+-// CEN64D: Cycle-Accurate Nintendo 64 Debugger
+-// Copyright (C) 2015, Tyler J. Stachecki.
+-//
+-// This file is subject to the terms and conditions defined in
+-// 'LICENSE', which is part of this source code package.
+-//
+-
+-#include "rdp_window.h"
+-
+-RDPWindow::RDPWindow(QAction *toggleAction, bool initiallyVisible)
+-  : ToggleWindow(tr("CEN64D: RDP"), toggleAction, initiallyVisible) {
+-}
+-
+-RDPWindow::~RDPWindow() {
+-}
+-
++//
++// rdp_window.cpp: RDP view window.
++//
++// CEN64D: Cycle-Accurate Nintendo 64 Debugger
++// Copyright (C) 2015, Tyler J. Stachecki.
++//
++// This file is subject to the terms and conditions defined in
++// 'LICENSE', which is part of this source code package.
++//
++
++#include "rdp_window.h"
++
++RDPWindow::RDPWindow(QAction *toggleAction, bool initiallyVisible)
++  : ToggleWindow(tr("CEN64D: RDP"), toggleAction, initiallyVisible) {
++}
++
++RDPWindow::~RDPWindow() {
++}
++
+diff --git a/debugger/register_model.cpp b/debugger/register_model.cpp
+index fef24bb..529acf6 100644
+--- a/debugger/register_model.cpp
++++ b/debugger/register_model.cpp
+@@ -1,28 +1,28 @@
+-//
+-// register_model.cpp: CEN64D register model (MVC).
+-//
+-// CEN64D: Cycle-Accurate Nintendo 64 Debugger
+-// Copyright (C) 2015, Tyler J. Stachecki.
+-//
+-// This file is subject to the terms and conditions defined in
+-// 'LICENSE', which is part of this source code package.
+-//
+-
+-#include "register_model.h"
+-
+-RegisterModel::RegisterModel(unsigned num_regs) {
+-  data = new quint64[num_regs];
+-}
+-
+-RegisterModel::~RegisterModel() {
+-  delete[] data;
+-}
+-
+-quint64 RegisterModel::getIndex(unsigned i) {
+-  return data[i];
+-}
+-
+-void RegisterModel::setIndex(unsigned i, quint64 d) {
+-  data[i] = d;
+-}
+-
++//
++// register_model.cpp: CEN64D register model (MVC).
++//
++// CEN64D: Cycle-Accurate Nintendo 64 Debugger
++// Copyright (C) 2015, Tyler J. Stachecki.
++//
++// This file is subject to the terms and conditions defined in
++// 'LICENSE', which is part of this source code package.
++//
++
++#include "register_model.h"
++
++RegisterModel::RegisterModel(unsigned num_regs) {
++  data = new quint64[num_regs];
++}
++
++RegisterModel::~RegisterModel() {
++  delete[] data;
++}
++
++quint64 RegisterModel::getIndex(unsigned i) {
++  return data[i];
++}
++
++void RegisterModel::setIndex(unsigned i, quint64 d) {
++  data[i] = d;
++}
++
+diff --git a/debugger/register_view.cpp b/debugger/register_view.cpp
+index ab95b88..9518bb9 100644
+--- a/debugger/register_view.cpp
++++ b/debugger/register_view.cpp
+@@ -1,124 +1,124 @@
+-//
+-// register_view.cpp: CEN64D register view (MVC).
+-//
+-// CEN64D: Cycle-Accurate Nintendo 64 Debugger
+-// Copyright (C) 2015, Tyler J. Stachecki.
+-//
+-// This file is subject to the terms and conditions defined in
+-// 'LICENSE', which is part of this source code package.
+-//
+-
+-#include "register_view.h"
+-#include <QBrush>
+-#include <QColor>
+-#include <QFont>
+-#include <QPainter>
+-#include <QPaintEvent>
+-#include <QResizeEvent>
+-#include <QScrollBar>
+-#include <QSize>
+-#include <cstdio>
+-#include <cstring>
+-
+-RegisterView::RegisterView(const char **registers,
+-  unsigned numRegisters, unsigned octets) : model(numRegisters),
+-  registers(registers), numRegisters(numRegisters), octets(octets) {
+-  unsigned i;
+-
+-  QFont monospacedFont("Courier New");
+-  monospacedFont.setFixedPitch(true);
+-  monospacedFont.setPointSize(10);
+-  setFont(monospacedFont);
+-
+-  QFontMetrics metrics(monospacedFont);
+-  fontWidth = metrics.width('0');
+-  fontHeight = metrics.height();
+-
+-  // Find the strlen of the longest mnemonic.
+-  for (longestMnemonic = 0, i = 0; i < numRegisters; i++) {
+-    size_t len = strlen(registers[i]);
+-
+-    if (len > longestMnemonic)
+-      longestMnemonic = len;
+-  }
+-
+-  // Create the format string.
+-  sprintf(formatstr, " 0x%%.%ullX", octets);
+-}
+-
+-RegisterView::~RegisterView() {
+-}
+-
+-unsigned RegisterView::getMaximumHeight() const {
+-  return fontHeight * numRegisters;
+-}
+-
+-unsigned RegisterView::getMaximumWidth() const {
+-  return 1 + (3 + octets + longestMnemonic) * fontWidth;
+-}
+-
+-RegisterModel& RegisterView::getModel() {
+-  return model;
+-}
+-
+-void RegisterView::paintEvent(QPaintEvent* event) {
+-  QSize area = maximumViewportSize();
+-  char buf[32];
+-  int i;
+-
+-  unsigned hs = horizontalScrollBar()->value();
+-  unsigned vs = verticalScrollBar()->value();
+-  unsigned hsDW = hs / fontWidth;
+-  unsigned hsMW = hs % fontWidth;
+-  unsigned vsDH = vs / fontHeight;
+-  unsigned vsMH = vs % fontHeight;
+-
+-  // TODO: Fonts don't seem to render exactly
+-  // where we want them, so add a fudge factor.
+-  float fudge = 2.0 / 3.0;
+-  unsigned start = fontHeight * fudge;
+-
+-  QPainter painter(viewport());
+-  QBrush clear = QBrush(Qt::white);
+-  QBrush shaded = QBrush(QColor(0xE8, 0xE8, 0xE8));
+-
+-  // Shade ever other line.
+-  painter.fillRect(0, 0, area.width(), area.height(), clear);
+-
+-  if (vsDH & 0x1)
+-    painter.fillRect(0, 0, area.width(), fontHeight - vsMH, shaded);
+-
+-  for (i = (vsDH & 0x1 ? fontHeight : 0) + fontHeight - vsMH;
+-    i < area.height(); i+= fontHeight * 2) {
+-    painter.fillRect(0, i, area.width(), fontHeight, shaded);
+-  }
+-
+-  // Draw any values in the range.
+-  unsigned rs = vsDH;
+-  unsigned rf = vs + fontHeight * (numRegisters - rs);
+-
+-  if (rf > numRegisters)
+-    rf = numRegisters;
+-
+-  for (i = -vsMH; i < area.height() && rs < rf; i += fontHeight) {
+-    size_t len = strlen(registers[rs]);
+-    unsigned j;
+-
+-    // Write the mnemonic, pad with spaces to align.
+-    strcpy(buf, registers[rs]);
+-    for (j = len; j < longestMnemonic; j++)
+-      buf[j] = ' ';
+-
+-    // Write the values, draw the string.
+-    sprintf(buf + longestMnemonic, formatstr, model.getIndex(rs++));
+-    painter.drawText(1 - hsMW, start + i, buf + hsDW);
+-  }
+-}
+-
+-void RegisterView::resizeEvent(QResizeEvent *event) {
+-  QSize area = maximumViewportSize();
+-
+-  horizontalScrollBar()->setRange(0, getMaximumWidth() - area.width());
+-  verticalScrollBar()->setRange(0, getMaximumHeight() - area.height());
+-}
+-
++//
++// register_view.cpp: CEN64D register view (MVC).
++//
++// CEN64D: Cycle-Accurate Nintendo 64 Debugger
++// Copyright (C) 2015, Tyler J. Stachecki.
++//
++// This file is subject to the terms and conditions defined in
++// 'LICENSE', which is part of this source code package.
++//
++
++#include "register_view.h"
++#include <QBrush>
++#include <QColor>
++#include <QFont>
++#include <QPainter>
++#include <QPaintEvent>
++#include <QResizeEvent>
++#include <QScrollBar>
++#include <QSize>
++#include <cstdio>
++#include <cstring>
++
++RegisterView::RegisterView(const char **registers,
++  unsigned numRegisters, unsigned octets) : model(numRegisters),
++  registers(registers), numRegisters(numRegisters), octets(octets) {
++  unsigned i;
++
++  QFont monospacedFont("Courier New");
++  monospacedFont.setFixedPitch(true);
++  monospacedFont.setPointSize(10);
++  setFont(monospacedFont);
++
++  QFontMetrics metrics(monospacedFont);
++  fontWidth = metrics.width('0');
++  fontHeight = metrics.height();
++
++  // Find the strlen of the longest mnemonic.
++  for (longestMnemonic = 0, i = 0; i < numRegisters; i++) {
++    size_t len = strlen(registers[i]);
++
++    if (len > longestMnemonic)
++      longestMnemonic = len;
++  }
++
++  // Create the format string.
++  sprintf(formatstr, " 0x%%.%ullX", octets);
++}
++
++RegisterView::~RegisterView() {
++}
++
++unsigned RegisterView::getMaximumHeight() const {
++  return fontHeight * numRegisters;
++}
++
++unsigned RegisterView::getMaximumWidth() const {
++  return 1 + (3 + octets + longestMnemonic) * fontWidth;
++}
++
++RegisterModel& RegisterView::getModel() {
++  return model;
++}
++
++void RegisterView::paintEvent(QPaintEvent* event) {
++  QSize area = maximumViewportSize();
++  char buf[32];
++  int i;
++
++  unsigned hs = horizontalScrollBar()->value();
++  unsigned vs = verticalScrollBar()->value();
++  unsigned hsDW = hs / fontWidth;
++  unsigned hsMW = hs % fontWidth;
++  unsigned vsDH = vs / fontHeight;
++  unsigned vsMH = vs % fontHeight;
++
++  // TODO: Fonts don't seem to render exactly
++  // where we want them, so add a fudge factor.
++  float fudge = 2.0 / 3.0;
++  unsigned start = fontHeight * fudge;
++
++  QPainter painter(viewport());
++  QBrush clear = QBrush(Qt::white);
++  QBrush shaded = QBrush(QColor(0xE8, 0xE8, 0xE8));
++
++  // Shade ever other line.
++  painter.fillRect(0, 0, area.width(), area.height(), clear);
++
++  if (vsDH & 0x1)
++    painter.fillRect(0, 0, area.width(), fontHeight - vsMH, shaded);
++
++  for (i = (vsDH & 0x1 ? fontHeight : 0) + fontHeight - vsMH;
++    i < area.height(); i+= fontHeight * 2) {
++    painter.fillRect(0, i, area.width(), fontHeight, shaded);
++  }
++
++  // Draw any values in the range.
++  unsigned rs = vsDH;
++  unsigned rf = vs + fontHeight * (numRegisters - rs);
++
++  if (rf > numRegisters)
++    rf = numRegisters;
++
++  for (i = -vsMH; i < area.height() && rs < rf; i += fontHeight) {
++    size_t len = strlen(registers[rs]);
++    unsigned j;
++
++    // Write the mnemonic, pad with spaces to align.
++    strcpy(buf, registers[rs]);
++    for (j = len; j < longestMnemonic; j++)
++      buf[j] = ' ';
++
++    // Write the values, draw the string.
++    sprintf(buf + longestMnemonic, formatstr, model.getIndex(rs++));
++    painter.drawText(1 - hsMW, start + i, buf + hsDW);
++  }
++}
++
++void RegisterView::resizeEvent(QResizeEvent *event) {
++  QSize area = maximumViewportSize();
++
++  horizontalScrollBar()->setRange(0, getMaximumWidth() - area.width());
++  verticalScrollBar()->setRange(0, getMaximumHeight() - area.height());
++}
++
+diff --git a/debugger/rsp_window.cpp b/debugger/rsp_window.cpp
+index b4714db..970fbb4 100644
+--- a/debugger/rsp_window.cpp
++++ b/debugger/rsp_window.cpp
+@@ -1,72 +1,72 @@
+-//
+-// rsp_window.cpp: RSP view window.
+-//
+-// CEN64D: Cycle-Accurate Nintendo 64 Debugger
+-// Copyright (C) 2015, Tyler J. Stachecki.
+-//
+-// This file is subject to the terms and conditions defined in
+-// 'LICENSE', which is part of this source code package.
+-//
+-
+-#include "rsp_window.h"
+-
+-static const char *regs[] = {
+-  "$r0",
+-  "$r1",
+-  "$r2",
+-  "$r3",
+-  "$r4",
+-  "$r5",
+-  "$r6",
+-  "$r7",
+-  "$r8",
+-  "$r9",
+-  "$r10",
+-  "$r11",
+-  "$r12",
+-  "$r13",
+-  "$r14",
+-  "$r15",
+-  "$r16",
+-  "$r17",
+-  "$r18",
+-  "$r19",
+-  "$r20",
+-  "$r21",
+-  "$r22",
+-  "$r23",
+-  "$r24",
+-  "$r25",
+-  "$r26",
+-  "$r27",
+-  "$r28",
+-  "$r29",
+-  "$r30",
+-  "$r31"
+-};
+-
+-RSPWindow::RSPWindow(QAction *toggleAction, bool initiallyVisible)
+-  : ToggleWindow(tr("CEN64D: RSP"), toggleAction, initiallyVisible),
+-    memoryView(4), registerView(regs, sizeof(regs) / sizeof(*regs), 8) {
+-  setLayout(&layout);
+-
+-  addressLabel.setText("Address: ");
+-
+-  addressWidget.setLayout(&addressLayout);
+-  addressLayout.addWidget(&memoryView, 0, 1, 1, 2);
+-  addressLayout.addWidget(&addressLabel, 1, 1);
+-  addressLayout.addWidget(&addressLine, 1, 2);
+-
+-  layout.addWidget(&disassemblyView, 0, 1);
+-  layout.addWidget(&registerView, 0, 2);
+-  layout.addWidget(&addressWidget, 1, 1, 1, 2);
+-
+-  layout.setColumnStretch(1, 25);
+-  layout.setColumnStretch(2, 10);
+-  layout.setRowStretch(0, 20);
+-  layout.setRowStretch(1, 10);
+-}
+-
+-RSPWindow::~RSPWindow() {
+-}
+-
++//
++// rsp_window.cpp: RSP view window.
++//
++// CEN64D: Cycle-Accurate Nintendo 64 Debugger
++// Copyright (C) 2015, Tyler J. Stachecki.
++//
++// This file is subject to the terms and conditions defined in
++// 'LICENSE', which is part of this source code package.
++//
++
++#include "rsp_window.h"
++
++static const char *regs[] = {
++  "$r0",
++  "$r1",
++  "$r2",
++  "$r3",
++  "$r4",
++  "$r5",
++  "$r6",
++  "$r7",
++  "$r8",
++  "$r9",
++  "$r10",
++  "$r11",
++  "$r12",
++  "$r13",
++  "$r14",
++  "$r15",
++  "$r16",
++  "$r17",
++  "$r18",
++  "$r19",
++  "$r20",
++  "$r21",
++  "$r22",
++  "$r23",
++  "$r24",
++  "$r25",
++  "$r26",
++  "$r27",
++  "$r28",
++  "$r29",
++  "$r30",
++  "$r31"
++};
++
++RSPWindow::RSPWindow(QAction *toggleAction, bool initiallyVisible)
++  : ToggleWindow(tr("CEN64D: RSP"), toggleAction, initiallyVisible),
++    memoryView(4), registerView(regs, sizeof(regs) / sizeof(*regs), 8) {
++  setLayout(&layout);
++
++  addressLabel.setText("Address: ");
++
++  addressWidget.setLayout(&addressLayout);
++  addressLayout.addWidget(&memoryView, 0, 1, 1, 2);
++  addressLayout.addWidget(&addressLabel, 1, 1);
++  addressLayout.addWidget(&addressLine, 1, 2);
++
++  layout.addWidget(&disassemblyView, 0, 1);
++  layout.addWidget(&registerView, 0, 2);
++  layout.addWidget(&addressWidget, 1, 1, 1, 2);
++
++  layout.setColumnStretch(1, 25);
++  layout.setColumnStretch(2, 10);
++  layout.setRowStretch(0, 20);
++  layout.setRowStretch(1, 10);
++}
++
++RSPWindow::~RSPWindow() {
++}
++
+diff --git a/debugger/toggle_window.cpp b/debugger/toggle_window.cpp
+index 5ae4aee..2578ccc 100644
+--- a/debugger/toggle_window.cpp
++++ b/debugger/toggle_window.cpp
+@@ -1,46 +1,46 @@
+-//
+-// toggle_window.cpp: Toggle-able window.
+-//
+-// CEN64D: Cycle-Accurate Nintendo 64 Debugger
+-// Copyright (C) 2015, Tyler J. Stachecki.
+-//
+-// This file is subject to the terms and conditions defined in
+-// 'LICENSE', which is part of this source code package.
+-//
+-
+-#include "toggle_window.h"
+-
+-ToggleWindow::ToggleWindow(const QString &windowTitle,
+-  QAction *toggleAction, bool initiallyVisible) : toggleAction(toggleAction) {
+-  setWindowTitle(windowTitle);
+-
+-  // Create states and connect signals to slots.
+-  windowHiddenState.addTransition(toggleAction,
+-    SIGNAL(triggered()), &windowExposedState);
+-
+-  windowExposedState.addTransition(toggleAction,
+-    SIGNAL(triggered()), &windowHiddenState);
+-
+-  QObject::connect(&windowHiddenState, SIGNAL(entered()), this, SLOT(hide()));
+-  QObject::connect(&windowExposedState, SIGNAL(entered()), this, SLOT(show()));
+-
+-  if (toggleAction->isCheckable())
+-    toggleAction->setChecked(initiallyVisible);
+-
+-  // Setup the state machine.
+-  windowMachine.addState(&windowHiddenState);
+-  windowMachine.addState(&windowExposedState);
+-  windowMachine.setInitialState(initiallyVisible
+-    ? &windowExposedState
+-    : &windowHiddenState);
+-
+-  windowMachine.start();
+-}
+-
+-ToggleWindow::~ToggleWindow() {
+-}
+-
+-void ToggleWindow::closeEvent(QCloseEvent *event) {
+-  toggleAction->trigger();
+-  event->accept();
+-}
++//
++// toggle_window.cpp: Toggle-able window.
++//
++// CEN64D: Cycle-Accurate Nintendo 64 Debugger
++// Copyright (C) 2015, Tyler J. Stachecki.
++//
++// This file is subject to the terms and conditions defined in
++// 'LICENSE', which is part of this source code package.
++//
++
++#include "toggle_window.h"
++
++ToggleWindow::ToggleWindow(const QString &windowTitle,
++  QAction *toggleAction, bool initiallyVisible) : toggleAction(toggleAction) {
++  setWindowTitle(windowTitle);
++
++  // Create states and connect signals to slots.
++  windowHiddenState.addTransition(toggleAction,
++    SIGNAL(triggered()), &windowExposedState);
++
++  windowExposedState.addTransition(toggleAction,
++    SIGNAL(triggered()), &windowHiddenState);
++
++  QObject::connect(&windowHiddenState, SIGNAL(entered()), this, SLOT(hide()));
++  QObject::connect(&windowExposedState, SIGNAL(entered()), this, SLOT(show()));
++
++  if (toggleAction->isCheckable())
++    toggleAction->setChecked(initiallyVisible);
++
++  // Setup the state machine.
++  windowMachine.addState(&windowHiddenState);
++  windowMachine.addState(&windowExposedState);
++  windowMachine.setInitialState(initiallyVisible
++    ? &windowExposedState
++    : &windowHiddenState);
++
++  windowMachine.start();
++}
++
++ToggleWindow::~ToggleWindow() {
++}
++
++void ToggleWindow::closeEvent(QCloseEvent *event) {
++  toggleAction->trigger();
++  event->accept();
++}
+diff --git a/debugger/vr4300_window.cpp b/debugger/vr4300_window.cpp
+index 9c5d8ad..59ef861 100644
+--- a/debugger/vr4300_window.cpp
++++ b/debugger/vr4300_window.cpp
+@@ -1,76 +1,76 @@
+-//
+-// vr4300_window.cpp: VR4300 view window.
+-//
+-// CEN64D: Cycle-Accurate Nintendo 64 Debugger
+-// Copyright (C) 2015, Tyler J. Stachecki.
+-//
+-// This file is subject to the terms and conditions defined in
+-// 'LICENSE', which is part of this source code package.
+-//
+-
+-#include "vr4300_window.h"
+-
+-static const char *regs[] = {
+-  "$zero",
+-  "$at",
+-  "$v0",
+-  "$v1",
+-  "$a0",
+-  "$a1",
+-  "$a2",
+-  "$a3",
+-  "$t0",
+-  "$t1",
+-  "$t2",
+-  "$t3",
+-  "$t4",
+-  "$t5",
+-  "$t6",
+-  "$t7",
+-  "$s0",
+-  "$s1",
+-  "$s2",
+-  "$s3",
+-  "$s4",
+-  "$s5",
+-  "$s6",
+-  "$s7",
+-  "$t8",
+-  "$t9",
+-  "$k0",
+-  "$k1",
+-  "$gp",
+-  "$sp",
+-  "$fp",
+-  "$ra"
+-};
+-
+-VR4300Window::VR4300Window(QAction *toggleAction, bool initiallyVisible)
+-  : ToggleWindow(tr("CEN64D: VR4300"), toggleAction, initiallyVisible),
+-    memoryView(16), registerView(regs, sizeof(regs) / sizeof(*regs), 16) {
+-  setLayout(&layout);
+-
+-  vaddressLabel.setText("Virtual address: ");
+-  paddressLabel.setText("Physical address: ");
+-  paddressLine.setReadOnly(true);
+-
+-  addressWidget.setLayout(&addressLayout);
+-  addressLayout.addWidget(&vaddressLabel, 0, 1);
+-  addressLayout.addWidget(&vaddressLine, 0, 2);
+-  addressLayout.addWidget(&paddressLabel, 0, 3);
+-  addressLayout.addWidget(&paddressLine, 0, 4);
+-
+-  layout.addWidget(&disassemblyView, 0, 1);
+-  layout.addWidget(&registerView, 0, 2);
+-  layout.addWidget(&memoryView, 1, 1, 1, 2);
+-  layout.addWidget(&addressWidget, 2, 1, 1, 2);
+-
+-  layout.setColumnStretch(1, 25);
+-  layout.setColumnStretch(2, 10);
+-  layout.setRowStretch(0, 20);
+-  layout.setRowStretch(1, 10);
+-}
+-
+-VR4300Window::~VR4300Window() {
+-}
+-
++//
++// vr4300_window.cpp: VR4300 view window.
++//
++// CEN64D: Cycle-Accurate Nintendo 64 Debugger
++// Copyright (C) 2015, Tyler J. Stachecki.
++//
++// This file is subject to the terms and conditions defined in
++// 'LICENSE', which is part of this source code package.
++//
++
++#include "vr4300_window.h"
++
++static const char *regs[] = {
++  "$zero",
++  "$at",
++  "$v0",
++  "$v1",
++  "$a0",
++  "$a1",
++  "$a2",
++  "$a3",
++  "$t0",
++  "$t1",
++  "$t2",
++  "$t3",
++  "$t4",
++  "$t5",
++  "$t6",
++  "$t7",
++  "$s0",
++  "$s1",
++  "$s2",
++  "$s3",
++  "$s4",
++  "$s5",
++  "$s6",
++  "$s7",
++  "$t8",
++  "$t9",
++  "$k0",
++  "$k1",
++  "$gp",
++  "$sp",
++  "$fp",
++  "$ra"
++};
++
++VR4300Window::VR4300Window(QAction *toggleAction, bool initiallyVisible)
++  : ToggleWindow(tr("CEN64D: VR4300"), toggleAction, initiallyVisible),
++    memoryView(16), registerView(regs, sizeof(regs) / sizeof(*regs), 16) {
++  setLayout(&layout);
++
++  vaddressLabel.setText("Virtual address: ");
++  paddressLabel.setText("Physical address: ");
++  paddressLine.setReadOnly(true);
++
++  addressWidget.setLayout(&addressLayout);
++  addressLayout.addWidget(&vaddressLabel, 0, 1);
++  addressLayout.addWidget(&vaddressLine, 0, 2);
++  addressLayout.addWidget(&paddressLabel, 0, 3);
++  addressLayout.addWidget(&paddressLine, 0, 4);
++
++  layout.addWidget(&disassemblyView, 0, 1);
++  layout.addWidget(&registerView, 0, 2);
++  layout.addWidget(&memoryView, 1, 1, 1, 2);
++  layout.addWidget(&addressWidget, 2, 1, 1, 2);
++
++  layout.setColumnStretch(1, 25);
++  layout.setColumnStretch(2, 10);
++  layout.setRowStretch(0, 20);
++  layout.setRowStretch(1, 10);
++}
++
++VR4300Window::~VR4300Window() {
++}
++
+diff --git a/device/device.c b/device/device.c
+index cd5a046..7dc3ec4 100644
+--- a/device/device.c
++++ b/device/device.c
+@@ -139,9 +139,9 @@ void device_destroy(struct cen64_device *device, const char *cart_path) {
+ 
+   // Save profiling data, if any
+   if (cart_path && has_profile_samples(device->vr4300)) {
+-    char path[PATH_MAX];
+-    snprintf(path, PATH_MAX, "%s.profile", cart_path);
+-    path[PATH_MAX - 1] = '\0';
++    char path[MAX_PATH];
++    snprintf(path, sizeof(path), "%s.profile", cart_path);
++    path[sizeof(path) - 1] = '\0';
+ 
+     FILE *f = fopen(path, "w");
+     if (!f) {
+diff --git a/gdb/gdb.c b/gdb/gdb.c
+index 021784d..6730c95 100644
+--- a/gdb/gdb.c
++++ b/gdb/gdb.c
+@@ -12,9 +12,9 @@
+ #include "gdb/protocol.h"
+ 
+ #ifdef _WIN32
+-#include <winsock2.h>
+ #include <windows.h>
+-#include <ws2tcpip.h>
++//#include <winsock2.h>
++//#include <ws2tcpip.h>
+ #else
+ #include <netdb.h>
+ #include <sys/socket.h>
+@@ -126,7 +126,7 @@ CEN64_THREAD_RETURN_TYPE gdb_thread(void *opaque) {
+       for (at = 0; at < search_end && gdb->packet_buffer[at] != '$'; at++) {
+         if (gdb->packet_buffer[at] == 0x03) {
+           vr4300_signal_break(gdb->device->vr4300);
+-        }
++        }  
+       }
+ 
+       if (at > handled_bytes) {
+@@ -185,14 +185,23 @@ cen64_cold bool gdb_init(struct gdb* gdb, struct cen64_device* device, const cha
+     return false;
+   }
+ 
+-  if ((gdb->socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
+-    printf("debugger error: could create socket\n");
++  // Initialize Winsock
++  WSADATA wsaData = { 0 };
++  int iResult = 0;
++  iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
++  if (iResult != 0) {
++      wprintf(L"WSAStartup failed: %d\n", iResult);
++      return 1;
++  }
++
++  if ((gdb->socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET) {
++    printf("debugger error: could not create socket %d\n", WSAGetLastError());
+     return false;
+   }
+   struct sockaddr_in addr;
+   memset(&addr, 0, sizeof(addr));
+   addr.sin_family = AF_INET;
+-  //addr.sin_addr.s_addr = IPADDR_ANY;
++  addr.sin_addr.s_addr = 0; //IPADDR_ANY;
+   addr.sin_port = htons((unsigned short)port);
+ 
+   int flag = 1;  
+diff --git a/gdb/protocol.c b/gdb/protocol.c
+index 18a7786..89327df 100644
+--- a/gdb/protocol.c
++++ b/gdb/protocol.c
+@@ -15,9 +15,9 @@
+ #include <inttypes.h>
+ 
+ #ifdef _WIN32
+-#include <winsock2.h>
++//#include <winsock2.h>
+ #include <windows.h>
+-#include <ws2tcpip.h>
++//#include <ws2tcpip.h>
+ #else
+ #include <netdb.h>
+ #include <sys/socket.h>
+diff --git a/menu_interface.cpp b/menu_interface.cpp
+new file mode 100644
+index 0000000..5b0905c
+--- /dev/null
++++ b/menu_interface.cpp
+@@ -0,0 +1,263 @@
++#include <Windows.h>
++#include <stdint.h>
++#include <stdio.h>
++
++#define DAISY_BASE_REGISTER 0x08040000
++#define DAISY_MENU_INTERRUPT (1 << EXTI3_IRQn)
++enum DAISY_FW_FUNCTION {
++    GET_FW_VERSION,
++    ENABLE_MENU_FUNCTIONS,
++    DISABLE_MENU_FUNCTIONS,
++    SD_CARD_READ_SECTOR,
++    SD_CARD_WRITE_SECTOR,
++    UPLOAD_ROM,
++    SET_SAVE_TYPE,
++};
++
++#define DAISY_STATUS_BIT_ROM_LOADING 0x00000001
++#define DAISY_STATUS_BIT_SD_BUSY     0x00000002
++#define DAISY_STATUS_BIT_MENU_MODE   0x00000004
++#define DAISY_STATUS_BIT_DMA_BUSY    0x00000008
++#define DAISY_STATUS_BIT_DMA_TIMEOUT 0x00000010
++#define DAISY_STATUS_BIT_SD_ERROR    0x00000020
++#define DCFG_FIFO_TO_RAM 0
++#define DCFG_RAM_TO_FIFO 1
++
++enum DAISY_REGISTERS {
++    REG_STATUS,
++    REG_EXECUTE_FUNCTION,
++    REG_FUNCTION_PARAMETER,
++    REG_DMA_CFG,
++    REG_DMA_LEN,
++    REG_DMA_RAM_ADDR, // There are 512 bytes past this register to receive or send DMA.
++    REG_DMA_DATA
++};
++
++#define SAVE_TYPE_OFF 0
++#define SAVE_TYPE_SRAM 1
++#define SAVE_TYPE_SRAM96 2
++#define SAVE_TYPE_EEP4k 3
++#define SAVE_TYPE_EEP16k 4
++#define SAVE_TYPE_FLASH 5
++
++//extern uint32_t* MenuBase;
++#define F_OK 0
++BYTE* FlashRamStorage[1024];
++#if 0
++
++
++void InitMenuFunctions(void);
++
++#include "daisy_seed.h"
++#include "stm32h7xx_hal.h"
++#include "sys/system.h"
++#include "stm32h7xx_hal_dma.h"
++#include "stm32h7xx_ll_tim.h"
++#include "stm32h7xx_ll_bus.h"
++#include "n64common.h"
++#include "daisydrive64.h"
++#include "flashram.h"
++#include "diskio.h"
++#include "menu.h"
++#include "menurom.h"
++
++void LoadRom(const char* Name);
++
++using namespace daisy;
++SdmmcHandler::Config sd_cfg;
++extern SdmmcHandler   sd;
++#endif
++
++uint32_t* MenuBase = (uint32_t*)FlashRamStorage;
++
++void InitMenuFunctions(void)
++{
++#if 0
++    // Setup interrupt priority.
++    HAL_NVIC_SetPriority(EXTI3_IRQn, 11, 0);
++    HAL_NVIC_EnableIRQ(EXTI3_IRQn);
++
++    // Enable software interrupts.
++    EXTI->IMR1 |= DAISY_MENU_INTERRUPT;
++    EXTI->EMR1 |= DAISY_MENU_INTERRUPT;
++    //memcpy(ram, menurom, sizeof(menurom));
++#endif
++}
++
++int retCode = 0;
++HANDLE device = NULL;
++
++void EnableMenu(void) {
++#if 0
++    sd_cfg.Defaults();
++    sd_cfg.speed = SdmmcHandler::Speed::VERY_FAST;
++    sd.Init(sd_cfg);
++
++    // Mount SD Card
++    DSTATUS Status = disk_initialize(0);
++    if (RES_OK != Status) {
++        BlinkAndDie(500, 100);
++    }
++#endif
++    
++    if (device == NULL) {
++    device = CreateFile("\\\\.\\D:",    // Drive to open
++    //device = CreateFile("\\.\Disk 1",    // Drive to open
++        GENERIC_READ,           // Access mode
++        FILE_SHARE_READ | FILE_SHARE_WRITE,        // Share Mode
++        NULL,                   // Security Descriptor
++        OPEN_EXISTING,          // How to create
++        0,                      // File attributes
++        NULL);                  // Handle to template
++        }
++}
++
++#define DRESULT DWORD
++DRESULT disk_read(
++    BYTE pdrv,		/* Physical drive nmuber to identify the drive */
++    BYTE* buff,		/* Data buffer to store read data */
++    DWORD sector,	        /* Sector address in LBA */
++    UINT count		/* Number of sectors to read */
++)
++{
++    DWORD bytesRead;
++
++    // low level diskread of d: drive.
++    if (device == INVALID_HANDLE_VALUE)
++    {
++        return 1;
++    }
++
++    SetFilePointer(device, sector * 512, NULL, FILE_BEGIN);
++
++    if (!ReadFile(device, buff, 512 * count, &bytesRead, NULL))
++    {
++        return 1;
++    }
++
++    return F_OK;
++}
++
++DRESULT disk_write(
++    BYTE pdrv,		/* Physical drive nmuber to identify the drive */
++    const BYTE* buff,	/* Data to be written */
++    DWORD sector,		/* Sector address in LBA */
++    UINT count        	/* Number of sectors to write */
++    )
++{
++    // low level diskwrite of d: drive. DO NOT IMPL.
++    SetFilePointer(device, sector * 512, NULL, FILE_BEGIN);
++
++    DWORD bytesWritten = 0;
++    if (!WriteFile(device, buff, 512 * count, &bytesWritten, NULL))
++    {
++        return 1;
++    }
++
++    if (bytesWritten != 512 * count) {
++        return 1;
++    }
++
++    return F_OK;
++}
++
++extern "C" struct rom_file cart;
++extern "C" int close_rom_file(const struct rom_file* file);
++extern "C" int open_rom_file(const char* path, struct rom_file* file);
++
++void LoadRom(char *Name)
++{
++    // Swap the rom that is presented on the PI bus.
++    CloseHandle(device);
++    char FileName[MAX_PATH];
++    sprintf(FileName, "d:\\%s", Name);
++    close_rom_file(&cart);
++    open_rom_file(FileName, &cart);
++}
++
++inline void HandleExecute(void)
++{
++    switch (MenuBase[REG_EXECUTE_FUNCTION]) {
++    case GET_FW_VERSION:
++        MenuBase[REG_STATUS] |= DAISY_STATUS_BIT_DMA_BUSY;
++        MenuBase[REG_FUNCTION_PARAMETER] = 0x666;
++        MenuBase[REG_STATUS] &= ~DAISY_STATUS_BIT_DMA_BUSY;
++        break;
++    case ENABLE_MENU_FUNCTIONS:
++        MenuBase[REG_STATUS] |= DAISY_STATUS_BIT_SD_BUSY;
++        EnableMenu();
++        MenuBase[REG_STATUS] &= ~DAISY_STATUS_BIT_SD_BUSY;
++        break;
++    case DISABLE_MENU_FUNCTIONS:
++        MenuBase[REG_STATUS] &= ~DAISY_STATUS_BIT_SD_BUSY;
++        break;
++    case SD_CARD_READ_SECTOR:
++    {
++        MenuBase[REG_STATUS] |= DAISY_STATUS_BIT_SD_BUSY;
++        MenuBase[REG_STATUS] &= ~DAISY_STATUS_BIT_SD_ERROR;
++        DRESULT result = disk_read(0, (BYTE*)&MenuBase[REG_DMA_DATA], MenuBase[REG_DMA_RAM_ADDR], 1);
++        if (result != F_OK) {
++            MenuBase[REG_STATUS] |= DAISY_STATUS_BIT_SD_ERROR;
++        }
++        MenuBase[REG_STATUS] &= ~DAISY_STATUS_BIT_SD_BUSY;
++    }
++    break;
++    case SD_CARD_WRITE_SECTOR:
++    {
++        MenuBase[REG_STATUS] |= DAISY_STATUS_BIT_SD_BUSY;
++        MenuBase[REG_STATUS] &= ~DAISY_STATUS_BIT_SD_ERROR;
++        DRESULT result = disk_write(0, (BYTE*)&MenuBase[REG_DMA_DATA], MenuBase[REG_DMA_RAM_ADDR], 1);
++        if (result != F_OK) {
++            MenuBase[REG_STATUS] |= DAISY_STATUS_BIT_SD_ERROR;
++        }
++
++        MenuBase[REG_STATUS] &= ~DAISY_STATUS_BIT_SD_BUSY;
++    }
++    break;
++    case UPLOAD_ROM:
++        MenuBase[REG_STATUS] |= DAISY_STATUS_BIT_SD_BUSY;
++        LoadRom((char*)&MenuBase[REG_DMA_DATA]);
++        MenuBase[REG_STATUS] &= ~DAISY_STATUS_BIT_SD_BUSY;
++        // TODO: cause the reset here, notify n64 that load is done.
++
++        break;
++    case SET_SAVE_TYPE:
++
++        break;
++    }
++
++    MenuBase[REG_STATUS] &= ~(DAISY_STATUS_BIT_DMA_BUSY | DAISY_STATUS_BIT_SD_BUSY);
++}
++
++extern "C" void HandleMenuRead(DWORD addr, DWORD* data)
++{
++    addr -= DAISY_BASE_REGISTER;
++    addr >>= 2;
++    *data = MenuBase[addr];
++}
++
++extern "C" void HandleMenuWrite(void *Menu, DWORD addr, DWORD data)
++{
++    addr -= DAISY_BASE_REGISTER;
++    addr >>= 2;
++    MenuBase[addr] = data;
++    if (addr == REG_EXECUTE_FUNCTION) {
++        MenuBase[REG_STATUS] |= DAISY_STATUS_BIT_DMA_BUSY | DAISY_STATUS_BIT_SD_BUSY;
++        if (MenuBase[REG_EXECUTE_FUNCTION] == ENABLE_MENU_FUNCTIONS) {
++            memcpy(Menu, &MenuBase, sizeof(Menu));
++        }
++
++        HandleExecute();
++    }
++}
++
++#if 0
++extern "C"
++ITCM_FUNCTION
++void EXTI3_IRQHandler(void)
++{
++    EXTI->PR1 = DAISY_MENU_INTERRUPT;
++    HandleExecute();
++}
++#endif
++
+diff --git a/os/common/local_time.c b/os/common/local_time.c
+index 05cba47..0b7446e 100644
+--- a/os/common/local_time.c
++++ b/os/common/local_time.c
+@@ -16,7 +16,7 @@ void get_local_time(struct time_stamp *ts, int32_t offset_seconds) {
+ 
+   struct tm tm = { 0, };
+ #ifdef _WIN32
+-  localtime_s(&now, &tm);
++  localtime_s(&tm, &now);
+ #else
+   localtime_r(&now, &tm);
+ #endif
+diff --git a/os/winapi/main.c b/os/winapi/main.c
+index 2d4e8d1..b385ce7 100644
+--- a/os/winapi/main.c
++++ b/os/winapi/main.c
+@@ -9,7 +9,7 @@
+ //
+ 
+ #include "cen64.h"
+-#include <winsock2.h>
++//#include <winsock2.h>
+ #include <windows.h>
+ 
+ // Windows application entry point.
+diff --git a/pi/controller.c b/pi/controller.c
+index 1ce9662..0110de0 100644
+--- a/pi/controller.c
++++ b/pi/controller.c
+@@ -48,6 +48,7 @@ void pi_cycle_(struct pi_controller *pi) {
+   }
+ }
+ 
++extern FILE* AddressLogger;
+ // Copies data from RDRAM to the PI
+ static int pi_dma_read(struct pi_controller *pi) {
+   uint32_t dest = pi->regs[PI_CART_ADDR_REG] & 0xFFFFFFE;
+@@ -75,6 +76,11 @@ static int pi_dma_read(struct pi_controller *pi) {
+     // write_flashram)
+     else if (pi->flashram.data != NULL && pi->flashram.mode == FLASHRAM_WRITE)
+       pi->flashram.rdram_pointer = source;
++
++    else if (pi->menuInterface != NULL) {
++        uint32_t offset = dest & 0x1FFFF;
++        memcpy(pi->menuInterface + offset, pi->bus->ri->ram + source, length);
++    }
+   }
+ 
+   else if ((source & 0x05000000) == 0x05000000)
+@@ -88,6 +94,7 @@ static int pi_dma_read(struct pi_controller *pi) {
+   return 0;
+ }
+ 
++uint32_t maxsource = 0;
+ static void pi_rom_fetch(struct pi_controller *pi, uint32_t source, int32_t length, uint8_t *dest) {
+   int l = length;
+   if (source >= pi->rom_size)
+@@ -143,13 +150,18 @@ static int pi_dma_write(struct pi_controller *pi) {
+       else if (pi->flashram.mode == FLASHRAM_READ)
+         memcpy(pi->bus->ri->ram + dest, pi->flashram.data + flashram_offset * 2, length);
+     }
++
++    else if (pi->menuInterface != NULL) {
++        uint32_t offset = source & 0x1FFFF;
++        memcpy(pi->bus->ri->ram + dest, pi->menuInterface + offset, length);
++    }
+   }
+ 
+   else if (source >= 0x18000000 && source < 0x18400000) {
+     // TODO: 64DD modem
+   }
+ 
+-  else if (pi->rom) {
++  else if (pi->rom && (source <= pi->rom_size)) {
+     // PI_WR_LEN_REG has a weird behavior when read back. It almost always
+     // reads as 0x7F, with the only exception of very short transfers (<= 8
+     // bytes) where the actual value is affected by the DRAM alignment. This
+@@ -169,6 +181,7 @@ static int pi_dma_write(struct pi_controller *pi) {
+     uint8_t mem[128];
+     bool first_block = true;
+ 
++    int32_t fullength = length;
+     while (length > 0) {
+       uint32_t dest = pi->regs[PI_DRAM_ADDR_REG] & 0x7FFFFE;
+       int32_t misalign = dest & 0x7;
+@@ -188,6 +201,18 @@ static int pi_dma_write(struct pi_controller *pi) {
+       uint32_t source = pi->regs[PI_CART_ADDR_REG] & 0xFFFFFFE;
+       int32_t rom_fetch_len = (cur_len + 1) & ~1;
+       pi_rom_fetch(pi, source, rom_fetch_len, mem);
++      // 128byte
++      // 64 read reqs, 2byte each
++      for (uint32_t x = 0; x < rom_fetch_len; x+= 2) {
++        uint32_t addr = pi->regs[PI_CART_ADDR_REG] + x; 
++        if (x & 2) {
++            addr = *((uint32_t*)(mem + (x & ~3)));
++            addr = byteswap_32(addr);
++            //addr = ((addr >> 16) | (addr << 16));
++        }
++        fwrite(&(addr), 4, 1, AddressLogger);
++      }
++      fflush(AddressLogger);
+       pi->regs[PI_CART_ADDR_REG] += rom_fetch_len;
+ 
+       // Writeback to RDRAM. Here come the lions.
+@@ -215,6 +240,10 @@ static int pi_dma_write(struct pi_controller *pi) {
+       first_block = false;
+     }
+   }
++  else {
++  int a = 0;
++  a += 1;
++    }
+ 
+   return 0;
+ }
+@@ -227,6 +256,7 @@ int pi_init(struct pi_controller *pi, struct bus_controller *bus,
+   pi->rom = rom;
+   pi->rom_size = rom_size;
+   pi->sram = sram;
++  pi->menuInterface = NULL;
+   pi->flashram_file = flashram;
+   pi->flashram.data = flashram->ptr;
+   pi->is_viewer = is_viewer;
+@@ -243,6 +273,9 @@ int read_cart_rom(void *opaque, uint32_t address, uint32_t *word) {
+   struct pi_controller *pi = (struct pi_controller *) opaque;
+   unsigned offset = (address - ROM_CART_BASE_ADDRESS) & ~0x3;
+ 
++  fwrite(&address, 4, 1, AddressLogger);
++  fflush(AddressLogger);
++
+   if (pi->is_viewer && is_viewer_map(pi->is_viewer, address))
+     return read_is_viewer(pi->is_viewer, address, word);
+ 
+@@ -255,6 +288,10 @@ int read_cart_rom(void *opaque, uint32_t address, uint32_t *word) {
+ 
+   memcpy(word, pi->rom + offset, sizeof(*word));
+   *word = byteswap_32(*word);
++  //fwrite(pi->rom + offset, 4, 1, AddressLogger);
++  uint32_t wordswap = *word;//(*word >> 16) | (*word << 16);
++  fwrite(&wordswap, 4, 1, AddressLogger);
++  fflush(AddressLogger);
+   return 0;
+ }
+ 
+@@ -420,14 +457,26 @@ int write_flashram(void *opaque, uint32_t address, uint32_t word, uint32_t dqm)
+   return 0;
+ }
+ 
++void HandleMenuRead(DWORD addr, DWORD* data);
++void HandleMenuWrite(void *menuInterface, DWORD addr, DWORD data);
++
+ // Mapped read of SRAM
+ int read_sram(void *opaque, uint32_t address, uint32_t *word) {
+-  fprintf(stderr, "SRAM read\n");
++  
++  if (address >= 0x08040000 && address < (0x08040000 + 512)) {
++      HandleMenuRead(address, word);
++  }
++  fprintf(stderr, "SRAM read %08X %08X\n", address, *word);
+   return 0;
+ }
+ 
+ // Mapped write of SRAM
+ int write_sram(void *opaque, uint32_t address, uint32_t word, uint32_t dqm) {
+-  fprintf(stderr, "SRAM write\n");
++  fprintf(stderr, "SRAM write %08X %08X %08X\n", address, word, dqm);
++  if (address >= 0x08040000 && address < (0x08040000 + 512)) {
++      struct pi_controller* pi = (struct pi_controller*)opaque;
++      
++      HandleMenuWrite(&(pi->menuInterface), address, word);
++  }
+   return 0;
+ }
+diff --git a/pi/controller.h b/pi/controller.h
+index f7a94cb..aae1236 100644
+--- a/pi/controller.h
++++ b/pi/controller.h
+@@ -62,6 +62,7 @@ struct pi_controller {
+   size_t rom_size;
+   const struct save_file *sram;
+   const struct save_file *flashram_file;
++  BYTE* menuInterface;
+   struct flashram flashram;
+   struct is_viewer *is_viewer;
+ 
+diff --git a/pi/is_viewer.c b/pi/is_viewer.c
+index 5401968..3646f44 100644
+--- a/pi/is_viewer.c
++++ b/pi/is_viewer.c
+@@ -19,7 +19,7 @@ int is_viewer_init(struct is_viewer *is, int is_viewer_output) {
+   is->output_buffer_conv = calloc(IS_BUFFER_SIZE * 3, 1);
+   is->show_output = is_viewer_output;
+ 
+-  is->cd = iconv_open("UTF-8", "EUC-JP");
++  //is->cd = iconv_open("UTF-8", "EUC-JP");
+ 
+   if (is->buffer == NULL || is->output_buffer == NULL ||
+       is->output_buffer_conv == NULL)
+@@ -60,7 +60,7 @@ int write_is_viewer(struct is_viewer *is, uint32_t address, uint32_t word, uint3
+         size_t outlen = 3 * len;
+         char *outptr = (char *)is->output_buffer_conv;
+         memset(is->output_buffer_conv, 0, IS_BUFFER_SIZE * 3);
+-        iconv(is->cd, &inptr, &len, &outptr, &outlen);
++        //iconv(is->cd, &inptr, &len, &outptr, &outlen);
+ 
+         if (is->show_output)
+           printf("%s", is->output_buffer_conv);
+diff --git a/si/cic.c b/si/cic.c
+index e46bce6..845897e 100644
+--- a/si/cic.c
++++ b/si/cic.c
+@@ -77,7 +77,8 @@ int get_cic_seed(const uint8_t *rom_data, uint32_t *cic_seed) {
+ 
+     default:
+       *cic_seed = 0;
+-      return 1;
++      *cic_seed = CIC_SEED_NUS_6102;
++      return 0;
+   }
+ 
+   return 0;
+diff --git a/util/cen64-profile2callgrind.cpp b/util/cen64-profile2callgrind.cpp
+index d078b73..db3b658 100644
+--- a/util/cen64-profile2callgrind.cpp
++++ b/util/cen64-profile2callgrind.cpp
+@@ -1,186 +1,186 @@
+-//
+-// cen64-profile2callgrind: Convert a cen64 profile file into a callgrind one.
+-//
+-// CEN64: Cycle-Accurate Nintendo 64 Emulator.
+-// Copyright (C) 2018 Lauri Kasanen
+-//
+-// This file is subject to the terms and conditions defined in
+-// 'LICENSE', which is part of this source code package.
+-//
+-
+-#define PACKAGE "" // work around bfd.h requirement
+-#include <bfd.h>
+-#include <limits.h>
+-#include <stdarg.h>
+-#include <stdio.h>
+-#include <stdint.h>
+-#include <stdlib.h>
+-#include <string.h>
+-
+-#include <map>
+-#include <string>
+-
+-using namespace std;
+-
+-static void die(const char fmt[], ...) {
+-	va_list ap;
+-	va_start(ap, fmt);
+-	vfprintf(stderr, fmt, ap);
+-	va_end(ap);
+-	exit(1);
+-}
+-
+-static asymbol **syms = NULL;
+-static uint32_t num_syms = 0;
+-
+-static bool found;
+-static const char *filename, *funcname;
+-static unsigned lineno, discriminator;
+-
+-static void findsym(bfd *bin, asection *section, void *addrv) {
+-	bfd_vma vma;
+-	bfd_size_type size;
+-
+-	if (found)
+-		return;
+-	if ((bfd_get_section_flags(bin, section) & SEC_ALLOC) == 0)
+-		return;
+-	vma = bfd_get_section_vma(bin, section);
+-	const uint32_t addr = *(uint32_t *) addrv;
+-
+-	if (addr < vma)
+-		return;
+-	size = bfd_get_section_size(section);
+-	if (addr >= vma + size)
+-		return;
+-
+-	found = bfd_find_nearest_line_discriminator(bin, section, syms, addr - vma,
+-							&filename, &funcname,
+-							&lineno, &discriminator);
+-}
+-
+-int main(int argc, char **argv) {
+-
+-	string s;
+-	map<uint32_t, string> funcs;
+-	char buf[PATH_MAX];
+-
+-	if (argc != 3) {
+-		die("Usage: %s my.z64.profile my.elf\n", argv[0]);
+-	}
+-
+-	bfd_init();
+-	//bfd_set_default_target("elf32-big");
+-	bfd *bin = bfd_openr(argv[2], NULL);
+-	if (!bin) die("Failed to open elf file\n");
+-
+-	bin->flags |= BFD_DECOMPRESS;
+-
+-	if (bfd_check_format(bin, bfd_archive) ||
+-		!bfd_check_format_matches(bin, bfd_object, NULL))
+-		die("Unable to get addresses from elf file\n");
+-
+-	const uint32_t storage = bfd_get_symtab_upper_bound(bin);
+-	if (storage) {
+-		syms = (asymbol **) malloc(storage);
+-		num_syms = bfd_canonicalize_symtab(bin, syms);
+-	}
+-
+-	s = "nm ";
+-	s += argv[2];
+-	s += " | grep -i \" t \"";
+-
+-	FILE *f = popen(s.c_str(), "r");
+-	if (!f) die("Can't get functions\n");
+-
+-	// Add the bootloader
+-	funcs[0x80000000] = "PIF bootloader";
+-	while (fgets(buf, PATH_MAX, f)) {
+-		uint32_t tmp;
+-		if (sscanf(buf, "%x", &tmp) != 1)
+-			die("Failed getting functions\n");
+-
+-		char *ptr = strrchr(buf, ' ');
+-		if (!ptr)
+-			die("Failed getting functions\n");
+-		ptr++;
+-
+-		uint32_t len = strlen(ptr);
+-		if (ptr[len - 1] == '\n')
+-			ptr[len - 1] = '\0';
+-
+-		// Skip internal/libc magic parts
+-		if (ptr[0] == '_' && ptr[1] == '_')
+-			continue;
+-
+-		funcs[tmp] = ptr;
+-	}
+-
+-	pclose(f);
+-
+-	strcpy(buf, argv[1]);
+-	char *ptr = strstr(buf, ".profile");
+-	if (ptr) {
+-		*ptr = '\0';
+-	}
+-	strcat(buf, ".callgrind");
+-
+-	FILE *out = fopen(buf, "w");
+-	if (!out) die("Can't open '%s' for output\n", buf);
+-
+-	fprintf(out, "# callgrind format\n");
+-	fprintf(out, "cmd: %s\n", argv[2]);
+-	fprintf(out, "events: instructions l1d-misses\n\n");
+-
+-	fprintf(out, "ob=%s\n\n", argv[2]);
+-
+-	uint64_t summary = 0, l1d_summary = 0;
+-
+-	// We have a list of functions, now turn the samples into C line info
+-	f = fopen(argv[1], "r");
+-	if (!f) die("Can't open profile file\n");
+-
+-	while (fgets(buf, PATH_MAX, f)) {
+-		uint32_t addr;
+-		uint64_t num, l1d_num;
+-		if (sscanf(buf, "%x %lu %lu", &addr, &num, &l1d_num) != 3)
+-			die("Malformed profile file\n");
+-
+-		summary += num;
+-		l1d_summary += l1d_num;
+-
+-		found = false;
+-		bfd_map_over_sections(bin, findsym, &addr);
+-
+-		if (found) {
+-			const char *ptr = filename ? strrchr(filename, '/') : NULL;
+-			if (ptr) {
+-				ptr++;
+-				fprintf(out, "fl=%s\n", ptr);
+-			} else {
+-				fprintf(out, "fl=??\n");
+-			}
+-
+-			fprintf(out, "fn=%s\n", funcname);
+-			fprintf(out, "%u %lu %lu\n\n", lineno, num, l1d_num);
+-		} else {
+-			fprintf(out, "fl=??\n");
+-			map<uint32_t, string>::const_iterator it = funcs.lower_bound(addr);
+-			it--;
+-			fprintf(out, "fn=%s\n", it->second.c_str());
+-
+-			fprintf(out, "0 %lu %lu\n\n", num, l1d_num);
+-		}
+-	}
+-
+-	bfd_close(bin);
+-
+-	fprintf(out, "totals: %lu %lu\n", summary, l1d_summary);
+-
+-	fclose(f);
+-	fclose(out);
+-	free(syms);
+-
+-	return 0;
+-}
+-
++//
++// cen64-profile2callgrind: Convert a cen64 profile file into a callgrind one.
++//
++// CEN64: Cycle-Accurate Nintendo 64 Emulator.
++// Copyright (C) 2018 Lauri Kasanen
++//
++// This file is subject to the terms and conditions defined in
++// 'LICENSE', which is part of this source code package.
++//
++
++#define PACKAGE "" // work around bfd.h requirement
++#include <bfd.h>
++#include <limits.h>
++#include <stdarg.h>
++#include <stdio.h>
++#include <stdint.h>
++#include <stdlib.h>
++#include <string.h>
++
++#include <map>
++#include <string>
++
++using namespace std;
++
++static void die(const char fmt[], ...) {
++	va_list ap;
++	va_start(ap, fmt);
++	vfprintf(stderr, fmt, ap);
++	va_end(ap);
++	exit(1);
++}
++
++static asymbol **syms = NULL;
++static uint32_t num_syms = 0;
++
++static bool found;
++static const char *filename, *funcname;
++static unsigned lineno, discriminator;
++
++static void findsym(bfd *bin, asection *section, void *addrv) {
++	bfd_vma vma;
++	bfd_size_type size;
++
++	if (found)
++		return;
++	if ((bfd_get_section_flags(bin, section) & SEC_ALLOC) == 0)
++		return;
++	vma = bfd_get_section_vma(bin, section);
++	const uint32_t addr = *(uint32_t *) addrv;
++
++	if (addr < vma)
++		return;
++	size = bfd_get_section_size(section);
++	if (addr >= vma + size)
++		return;
++
++	found = bfd_find_nearest_line_discriminator(bin, section, syms, addr - vma,
++							&filename, &funcname,
++							&lineno, &discriminator);
++}
++
++int main(int argc, char **argv) {
++
++	string s;
++	map<uint32_t, string> funcs;
++	char buf[PATH_MAX];
++
++	if (argc != 3) {
++		die("Usage: %s my.z64.profile my.elf\n", argv[0]);
++	}
++
++	bfd_init();
++	//bfd_set_default_target("elf32-big");
++	bfd *bin = bfd_openr(argv[2], NULL);
++	if (!bin) die("Failed to open elf file\n");
++
++	bin->flags |= BFD_DECOMPRESS;
++
++	if (bfd_check_format(bin, bfd_archive) ||
++		!bfd_check_format_matches(bin, bfd_object, NULL))
++		die("Unable to get addresses from elf file\n");
++
++	const uint32_t storage = bfd_get_symtab_upper_bound(bin);
++	if (storage) {
++		syms = (asymbol **) malloc(storage);
++		num_syms = bfd_canonicalize_symtab(bin, syms);
++	}
++
++	s = "nm ";
++	s += argv[2];
++	s += " | grep -i \" t \"";
++
++	FILE *f = popen(s.c_str(), "r");
++	if (!f) die("Can't get functions\n");
++
++	// Add the bootloader
++	funcs[0x80000000] = "PIF bootloader";
++	while (fgets(buf, PATH_MAX, f)) {
++		uint32_t tmp;
++		if (sscanf(buf, "%x", &tmp) != 1)
++			die("Failed getting functions\n");
++
++		char *ptr = strrchr(buf, ' ');
++		if (!ptr)
++			die("Failed getting functions\n");
++		ptr++;
++
++		uint32_t len = strlen(ptr);
++		if (ptr[len - 1] == '\n')
++			ptr[len - 1] = '\0';
++
++		// Skip internal/libc magic parts
++		if (ptr[0] == '_' && ptr[1] == '_')
++			continue;
++
++		funcs[tmp] = ptr;
++	}
++
++	pclose(f);
++
++	strcpy(buf, argv[1]);
++	char *ptr = strstr(buf, ".profile");
++	if (ptr) {
++		*ptr = '\0';
++	}
++	strcat(buf, ".callgrind");
++
++	FILE *out = fopen(buf, "w");
++	if (!out) die("Can't open '%s' for output\n", buf);
++
++	fprintf(out, "# callgrind format\n");
++	fprintf(out, "cmd: %s\n", argv[2]);
++	fprintf(out, "events: instructions l1d-misses\n\n");
++
++	fprintf(out, "ob=%s\n\n", argv[2]);
++
++	uint64_t summary = 0, l1d_summary = 0;
++
++	// We have a list of functions, now turn the samples into C line info
++	f = fopen(argv[1], "r");
++	if (!f) die("Can't open profile file\n");
++
++	while (fgets(buf, PATH_MAX, f)) {
++		uint32_t addr;
++		uint64_t num, l1d_num;
++		if (sscanf(buf, "%x %lu %lu", &addr, &num, &l1d_num) != 3)
++			die("Malformed profile file\n");
++
++		summary += num;
++		l1d_summary += l1d_num;
++
++		found = false;
++		bfd_map_over_sections(bin, findsym, &addr);
++
++		if (found) {
++			const char *ptr = filename ? strrchr(filename, '/') : NULL;
++			if (ptr) {
++				ptr++;
++				fprintf(out, "fl=%s\n", ptr);
++			} else {
++				fprintf(out, "fl=??\n");
++			}
++
++			fprintf(out, "fn=%s\n", funcname);
++			fprintf(out, "%u %lu %lu\n\n", lineno, num, l1d_num);
++		} else {
++			fprintf(out, "fl=??\n");
++			map<uint32_t, string>::const_iterator it = funcs.lower_bound(addr);
++			it--;
++			fprintf(out, "fn=%s\n", it->second.c_str());
++
++			fprintf(out, "0 %lu %lu\n\n", num, l1d_num);
++		}
++	}
++
++	bfd_close(bin);
++
++	fprintf(out, "totals: %lu %lu\n", summary, l1d_summary);
++
++	fclose(f);
++	fclose(out);
++	free(syms);
++
++	return 0;
++}
++

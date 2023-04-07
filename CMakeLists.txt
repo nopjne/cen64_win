@@ -23,7 +23,7 @@ else(APPLE)
 endif(APPLE)
 
 find_package(Iconv REQUIRED)
-find_package(OpenAL REQUIRED)
+#find_package(OpenAL)
 find_package(Threads REQUIRED)
 
 # If using GCC, configure it accordingly.
@@ -242,7 +242,7 @@ include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/arch/${CEN64_ARCH_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/os/common)
 include_directories(${ICONV_INCLUDE_DIR})
-include_directories(${OPENAL_INCLUDE_DIR})
+#include_directories(${OPENAL_INCLUDE_DIR})
 include_directories(${OPENGL_INCLUDE_DIR})
 
 #
@@ -479,7 +479,7 @@ add_executable(cen64
 
 target_link_libraries(cen64
 	${EXTRA_OS_LIBS}
-  ${OPENAL_LIBRARY}
+# ${OPENAL_LIBRARY}
   ${OPENGL_gl_LIBRARY}
   ${ICONV_LIBRARIES}
   ${VIDEO_LIB}

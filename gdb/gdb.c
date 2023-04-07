@@ -12,9 +12,9 @@
 #include "gdb/protocol.h"
 
 #ifdef _WIN32
-#include <winsock2.h>
 #include <windows.h>
-#include <ws2tcpip.h>
+//#include <winsock2.h>
+//#include <ws2tcpip.h>
 #else
 #include <netdb.h>
 #include <sys/socket.h>
@@ -126,7 +126,7 @@ CEN64_THREAD_RETURN_TYPE gdb_thread(void *opaque) {
       for (at = 0; at < search_end && gdb->packet_buffer[at] != '$'; at++) {
         if (gdb->packet_buffer[at] == 0x03) {
           vr4300_signal_break(gdb->device->vr4300);
-        }
+        }  
       }
 
       if (at > handled_bytes) {
@@ -185,14 +185,23 @@ cen64_cold bool gdb_init(struct gdb* gdb, struct cen64_device* device, const cha
     return false;
   }
 
-  if ((gdb->socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
-    printf("debugger error: could create socket\n");
+  // Initialize Winsock
+  WSADATA wsaData = { 0 };
+  int iResult = 0;
+  iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+  if (iResult != 0) {
+      wprintf(L"WSAStartup failed: %d\n", iResult);
+      return 1;
+  }
+
+  if ((gdb->socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET) {
+    printf("debugger error: could not create socket %d\n", WSAGetLastError());
     return false;
   }
   struct sockaddr_in addr;
   memset(&addr, 0, sizeof(addr));
   addr.sin_family = AF_INET;
-  //addr.sin_addr.s_addr = IPADDR_ANY;
+  addr.sin_addr.s_addr = 0; //IPADDR_ANY;
   addr.sin_port = htons((unsigned short)port);
 
   int flag = 1;  

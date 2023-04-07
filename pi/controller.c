@@ -48,6 +48,7 @@ void pi_cycle_(struct pi_controller *pi) {
   }
 }
 
+extern FILE* AddressLogger;
 // Copies data from RDRAM to the PI
 static int pi_dma_read(struct pi_controller *pi) {
   uint32_t dest = pi->regs[PI_CART_ADDR_REG] & 0xFFFFFFE;
@@ -75,6 +76,11 @@ static int pi_dma_read(struct pi_controller *pi) {
     // write_flashram)
     else if (pi->flashram.data != NULL && pi->flashram.mode == FLASHRAM_WRITE)
       pi->flashram.rdram_pointer = source;
+
+    else if (pi->menuInterface != NULL) {
+        uint32_t offset = dest & 0x1FFFF;
+        memcpy(pi->menuInterface + offset, pi->bus->ri->ram + source, length);
+    }
   }
 
   else if ((source & 0x05000000) == 0x05000000)
@@ -88,6 +94,7 @@ static int pi_dma_read(struct pi_controller *pi) {
   return 0;
 }
 
+uint32_t maxsource = 0;
 static void pi_rom_fetch(struct pi_controller *pi, uint32_t source, int32_t length, uint8_t *dest) {
   int l = length;
   if (source >= pi->rom_size)
@@ -143,13 +150,18 @@ static int pi_dma_write(struct pi_controller *pi) {
       else if (pi->flashram.mode == FLASHRAM_READ)
         memcpy(pi->bus->ri->ram + dest, pi->flashram.data + flashram_offset * 2, length);
     }
+
+    else if (pi->menuInterface != NULL) {
+        uint32_t offset = source & 0x1FFFF;
+        memcpy(pi->bus->ri->ram + dest, pi->menuInterface + offset, length);
+    }
   }
 
   else if (source >= 0x18000000 && source < 0x18400000) {
     // TODO: 64DD modem
   }
 
-  else if (pi->rom) {
+  else if (pi->rom && (source <= pi->rom_size)) {
     // PI_WR_LEN_REG has a weird behavior when read back. It almost always
     // reads as 0x7F, with the only exception of very short transfers (<= 8
     // bytes) where the actual value is affected by the DRAM alignment. This
@@ -169,6 +181,7 @@ static int pi_dma_write(struct pi_controller *pi) {
     uint8_t mem[128];
     bool first_block = true;
 
+    int32_t fullength = length;
     while (length > 0) {
       uint32_t dest = pi->regs[PI_DRAM_ADDR_REG] & 0x7FFFFE;
       int32_t misalign = dest & 0x7;
@@ -188,6 +201,18 @@ static int pi_dma_write(struct pi_controller *pi) {
       uint32_t source = pi->regs[PI_CART_ADDR_REG] & 0xFFFFFFE;
       int32_t rom_fetch_len = (cur_len + 1) & ~1;
       pi_rom_fetch(pi, source, rom_fetch_len, mem);
+      // 128byte
+      // 64 read reqs, 2byte each
+      for (uint32_t x = 0; x < rom_fetch_len; x+= 2) {
+        uint32_t addr = pi->regs[PI_CART_ADDR_REG] + x; 
+        if (x & 2) {
+            addr = *((uint32_t*)(mem + (x & ~3)));
+            addr = byteswap_32(addr);
+            //addr = ((addr >> 16) | (addr << 16));
+        }
+        fwrite(&(addr), 4, 1, AddressLogger);
+      }
+      fflush(AddressLogger);
       pi->regs[PI_CART_ADDR_REG] += rom_fetch_len;
 
       // Writeback to RDRAM. Here come the lions.
@@ -215,6 +240,10 @@ static int pi_dma_write(struct pi_controller *pi) {
       first_block = false;
     }
   }
+  else {
+  int a = 0;
+  a += 1;
+    }
 
   return 0;
 }
@@ -227,6 +256,7 @@ int pi_init(struct pi_controller *pi, struct bus_controller *bus,
   pi->rom = rom;
   pi->rom_size = rom_size;
   pi->sram = sram;
+  pi->menuInterface = NULL;
   pi->flashram_file = flashram;
   pi->flashram.data = flashram->ptr;
   pi->is_viewer = is_viewer;
@@ -243,6 +273,9 @@ int read_cart_rom(void *opaque, uint32_t address, uint32_t *word) {
   struct pi_controller *pi = (struct pi_controller *) opaque;
   unsigned offset = (address - ROM_CART_BASE_ADDRESS) & ~0x3;
 
+  fwrite(&address, 4, 1, AddressLogger);
+  fflush(AddressLogger);
+
   if (pi->is_viewer && is_viewer_map(pi->is_viewer, address))
     return read_is_viewer(pi->is_viewer, address, word);
 
@@ -255,6 +288,10 @@ int read_cart_rom(void *opaque, uint32_t address, uint32_t *word) {
 
   memcpy(word, pi->rom + offset, sizeof(*word));
   *word = byteswap_32(*word);
+  //fwrite(pi->rom + offset, 4, 1, AddressLogger);
+  uint32_t wordswap = *word;//(*word >> 16) | (*word << 16);
+  fwrite(&wordswap, 4, 1, AddressLogger);
+  fflush(AddressLogger);
   return 0;
 }
 
@@ -420,14 +457,26 @@ int write_flashram(void *opaque, uint32_t address, uint32_t word, uint32_t dqm) 
   return 0;
 }
 
+void HandleMenuRead(DWORD addr, DWORD* data);
+void HandleMenuWrite(void *menuInterface, DWORD addr, DWORD data);
+
 // Mapped read of SRAM
 int read_sram(void *opaque, uint32_t address, uint32_t *word) {
-  fprintf(stderr, "SRAM read\n");
+  
+  if (address >= 0x08040000 && address < (0x08040000 + 512)) {
+      HandleMenuRead(address, word);
+  }
+  fprintf(stderr, "SRAM read %08X %08X\n", address, *word);
   return 0;
 }
 
 // Mapped write of SRAM
 int write_sram(void *opaque, uint32_t address, uint32_t word, uint32_t dqm) {
-  fprintf(stderr, "SRAM write\n");
+  fprintf(stderr, "SRAM write %08X %08X %08X\n", address, word, dqm);
+  if (address >= 0x08040000 && address < (0x08040000 + 512)) {
+      struct pi_controller* pi = (struct pi_controller*)opaque;
+      
+      HandleMenuWrite(&(pi->menuInterface), address, word);
+  }
   return 0;
 }

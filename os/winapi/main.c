@@ -9,7 +9,7 @@
 //
 
 #include "cen64.h"
-#include <winsock2.h>
+//#include <winsock2.h>
 #include <windows.h>
 
 // Windows application entry point.
