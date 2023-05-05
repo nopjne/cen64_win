@@ -11,6 +11,7 @@ enum DAISY_FW_FUNCTION {
     SD_CARD_READ_SECTOR,
     SD_CARD_WRITE_SECTOR,
     UPLOAD_ROM,
+    UPLOAD_ROM_EX,
     SET_SAVE_TYPE,
 };
 
@@ -278,6 +279,11 @@ inline void HandleExecute(void)
         // TODO: cause the reset here, notify n64 that load is done.
 
         break;
+    case UPLOAD_ROM_EX:
+        MenuBase[REG_STATUS] |= DAISY_STATUS_BIT_SD_BUSY;
+        LoadRom((char*)&MenuBase[REG_DMA_DATA]);
+        MenuBase[REG_STATUS] &= ~DAISY_STATUS_BIT_SD_BUSY;
+    break;
     case SET_SAVE_TYPE:
 
         break;
