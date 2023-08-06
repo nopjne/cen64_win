@@ -30,6 +30,23 @@
 #define close(x) closesocket(x)
 #endif
 
+#define _WS2_32_WINSOCK_SWAP_LONGLONG1(l)            \
+((((l) >> 56) & 0x00000000000000FFLL) | \
+    (((l) >> 40) & 0x000000000000FF00LL) | \
+    (((l) >> 24) & 0x0000000000FF0000LL) | \
+    (((l) >> 8) & 0x00000000FF000000LL) | \
+    (((l) << 8) & 0x000000FF00000000LL) | \
+    (((l) << 24) & 0x0000FF0000000000LL) | \
+    (((l) << 40) & 0x00FF000000000000LL) | \
+    (((l) << 56) & 0xFF00000000000000LL))
+
+
+__inline uint64_t htonll1(uint64_t Value)
+{
+    const unsigned __int64 Retval = _WS2_32_WINSOCK_SWAP_LONGLONG1(Value);
+    return Retval;
+}
+
 #define NETAPI_DEBUG_MAGIC 0x40544A53U // "@TJS"
 #define NETAPI_DEBUG_VERSION 0U
 
@@ -177,11 +194,11 @@ int netapi_debug_handle_request(int sfd, struct cen64_device *device,
       length = sizeof(uint64_t) * 33;
 
       for (i = 0; i < 32; i++) {
-        u64 = htonll(vr4300_get_register(device->vr4300, i));
+        u64 = htonll1(vr4300_get_register(device->vr4300, i));
         memcpy(data + i * sizeof(u64), &u64, sizeof(u64));
       }
 
-      u64 = htonll(vr4300_get_pc(device->vr4300));
+      u64 = htonll1(vr4300_get_pc(device->vr4300));
       memcpy(data + 32 * sizeof(u64), &u64, sizeof(u64));
       break;
 

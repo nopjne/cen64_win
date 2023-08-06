@@ -2,7 +2,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define DAISY_BASE_REGISTER 0x08040000
+#define DAISY_BASE_REGISTER 0x09000000
+#define OLD_DAISY_BASE_REGISTER 0x08040000
 #define DAISY_MENU_INTERRUPT (1 << EXTI3_IRQn)
 enum DAISY_FW_FUNCTION {
     GET_FW_VERSION,
@@ -43,7 +44,7 @@ enum DAISY_REGISTERS {
 
 //extern uint32_t* MenuBase;
 #define F_OK 0
-BYTE* FlashRamStorage[1024];
+BYTE FlashRamStorage[1024];
 #if 0
 
 
@@ -294,14 +295,24 @@ inline void HandleExecute(void)
 
 extern "C" void HandleMenuRead(DWORD addr, DWORD* data)
 {
-    addr -= DAISY_BASE_REGISTER;
+    if ((addr & DAISY_BASE_REGISTER) == DAISY_BASE_REGISTER) {
+        addr -= DAISY_BASE_REGISTER;
+    } else {
+        addr -= OLD_DAISY_BASE_REGISTER;
+    }
+
     addr >>= 2;
     *data = MenuBase[addr];
 }
 
 extern "C" void HandleMenuWrite(void *Menu, DWORD addr, DWORD data)
 {
-    addr -= DAISY_BASE_REGISTER;
+    if ((addr & DAISY_BASE_REGISTER) == DAISY_BASE_REGISTER) {
+        addr -= DAISY_BASE_REGISTER;
+    } else {
+        addr -= OLD_DAISY_BASE_REGISTER;
+    }
+
     addr >>= 2;
     MenuBase[addr] = data;
     if (addr == REG_EXECUTE_FUNCTION) {

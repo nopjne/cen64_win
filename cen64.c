@@ -342,7 +342,9 @@ int check_extensions(void) {
     return 0;
 }
 
+#ifdef ADDRESS_LOGGING_ENABLED
 FILE* AddressLogger = NULL;
+#endif
 // Load any ROM images required for simulation.
 int load_roms(const char *ddipl_path, const char *ddrom_path,
   const char *pifrom_path, const char *cart_path, struct rom_file *ddipl,
@@ -350,7 +352,9 @@ int load_roms(const char *ddipl_path, const char *ddrom_path,
   struct rom_file *ddrom, struct rom_file *pifrom, struct rom_file *cart) {
   memset(ddipl, 0, sizeof(*ddipl));
 
+#ifdef ADDRESS_LOGGING_ENABLED
   AddressLogger = fopen("c:\\hw\\Cen64AddrLog.bin","wb");
+#endif
   if (ddipl_path && open_rom_file(ddipl_path, ddipl)) {
     printf("Failed to load DD IPL ROM: %s.\n", ddipl_path);
 

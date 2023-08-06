@@ -49,7 +49,19 @@ int open_rom_file(const char *path, struct rom_file *file) {
     return -3;
   }
 
-  file->ptr = ptr;
+  
+  if (*((uint16_t*)ptr) == 0x8037) {
+    uint8_t* flipped = malloc(size);
+      for (int i = 0; i < size; i += 2) {
+          flipped[i] = ((uint8_t*)ptr)[i + 1];
+          flipped[i + 1] = ((uint8_t*)ptr)[i];
+      }
+      file->ptr = flipped;
+  } else {
+      file->ptr = ptr;
+  }
+
+  
   file->size = size;
   file->mapping = mapping;
   file->file = hfile;

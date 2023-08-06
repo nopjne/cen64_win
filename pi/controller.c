@@ -26,6 +26,23 @@ const char *pi_register_mnemonics[NUM_PI_REGISTERS] = {
 };
 #endif
 
+#define _WS2_32_WINSOCK_SWAP_LONGLONG1(l)            \
+((((l) >> 56) & 0x00000000000000FFLL) | \
+    (((l) >> 40) & 0x000000000000FF00LL) | \
+    (((l) >> 24) & 0x0000000000FF0000LL) | \
+    (((l) >> 8) & 0x00000000FF000000LL) | \
+    (((l) << 8) & 0x000000FF00000000LL) | \
+    (((l) << 24) & 0x0000FF0000000000LL) | \
+    (((l) << 40) & 0x00FF000000000000LL) | \
+    (((l) << 56) & 0xFF00000000000000LL))
+
+
+__inline uint64_t htonll1(uint64_t Value)
+{
+    const unsigned __int64 Retval = _WS2_32_WINSOCK_SWAP_LONGLONG1(Value);
+    return Retval;
+}
+
 static int pi_dma_read(struct pi_controller *pi);
 static int pi_dma_write(struct pi_controller *pi);
 
@@ -143,7 +160,7 @@ static int pi_dma_write(struct pi_controller *pi) {
       uint32_t flashram_offset = source & 0x1FFFF;
       // FlashRAM status
       if (pi->flashram.mode == FLASHRAM_STATUS) {
-        uint64_t status = htonll(pi->flashram.status);
+        uint64_t status = htonll1(pi->flashram.status);
         memcpy(pi->bus->ri->ram + dest, &status, 8);
       }
       // FlashRAM read
@@ -203,8 +220,10 @@ static int pi_dma_write(struct pi_controller *pi) {
       pi_rom_fetch(pi, source, rom_fetch_len, mem);
       // 128byte
       // 64 read reqs, 2byte each
+#ifdef ADDRESS_LOGGING_ENABLED
       for (uint32_t x = 0; x < rom_fetch_len; x+= 2) {
-        uint32_t addr = pi->regs[PI_CART_ADDR_REG] + x; 
+        uint32_t addr = pi->regs[PI_CART_ADDR_REG] + x;
+
         if (x & 2) {
             addr = *((uint32_t*)(mem + (x & ~3)));
             addr = byteswap_32(addr);
@@ -213,6 +232,7 @@ static int pi_dma_write(struct pi_controller *pi) {
         fwrite(&(addr), 4, 1, AddressLogger);
       }
       fflush(AddressLogger);
+#endif
       pi->regs[PI_CART_ADDR_REG] += rom_fetch_len;
 
       // Writeback to RDRAM. Here come the lions.
@@ -272,9 +292,10 @@ int pi_init(struct pi_controller *pi, struct bus_controller *bus,
 int read_cart_rom(void *opaque, uint32_t address, uint32_t *word) {
   struct pi_controller *pi = (struct pi_controller *) opaque;
   unsigned offset = (address - ROM_CART_BASE_ADDRESS) & ~0x3;
-
+#ifdef ADDRESS_LOGGING_ENABLED
   fwrite(&address, 4, 1, AddressLogger);
   fflush(AddressLogger);
+#endif
 
   if (pi->is_viewer && is_viewer_map(pi->is_viewer, address))
     return read_is_viewer(pi->is_viewer, address, word);
@@ -288,10 +309,12 @@ int read_cart_rom(void *opaque, uint32_t address, uint32_t *word) {
 
   memcpy(word, pi->rom + offset, sizeof(*word));
   *word = byteswap_32(*word);
+#ifdef ADDRESS_LOGGING_ENABLED
   //fwrite(pi->rom + offset, 4, 1, AddressLogger);
   uint32_t wordswap = *word;//(*word >> 16) | (*word << 16);
   fwrite(&wordswap, 4, 1, AddressLogger);
   fflush(AddressLogger);
+#endif
   return 0;
 }
 
@@ -418,11 +441,16 @@ int write_flashram(void *opaque, uint32_t address, uint32_t word, uint32_t dqm) 
     case 0x78: // erase
       pi->flashram.mode = FLASHRAM_ERASE;
       pi->flashram.status = 0x1111800800C20000LL;
+      //pi->flashram.status = 0x00020000;
+      //pi->flashram.status = 0x00080000;
+      //pi->flashram.status = 0x1111'8008'00c2'001dull;
       break;
 
     case 0xA5: // set write offset
       pi->flashram.offset = (word & 0xFFFF) * 128;
       pi->flashram.status = 0x1111800400C20000LL;
+      //pi->flashram.status = 0x00010000;
+      //pi->flashram.status = 0x1111'8004'00c2'001dull;
       break;
 
     case 0xB4: // write
@@ -431,23 +459,35 @@ int write_flashram(void *opaque, uint32_t address, uint32_t word, uint32_t dqm) 
 
     case 0xD2: // execute
       // TODO bounds checks
-      if (pi->flashram.mode == FLASHRAM_ERASE)
+      if (pi->flashram.mode == FLASHRAM_ERASE) {
         memset(pi->flashram.data + pi->flashram.offset, 0xFF, 0x80);
+        //pi->flashram.status = 0x00020000;
+        //pi->flashram.status = 0x00080000;
+        //pi->flashram.status = 0x1111800200C20000LL;
 
-      else if (pi->flashram.mode == FLASHRAM_WRITE)
+      } else if (pi->flashram.mode == FLASHRAM_WRITE) {
         memcpy(pi->flashram.data + pi->flashram.offset,
             pi->bus->ri->ram + pi->flashram.rdram_pointer, 0x80);
 
+        //pi->flashram.status = 0x00040000;
+        //pi->flashram.status = 0x00010000;
+        //pi->flashram.status = 0x1111800100C20000LL;
+      }
       break;
 
     case 0xE1: // status
       pi->flashram.mode = FLASHRAM_STATUS;
       pi->flashram.status = 0x1111800100C20000LL;
+      //pi->flashram.status = 0x1111'8001'00c2'001dull;
+      //pi->flashram.status = 0x1111800100C2001ELL;
+      //pi->flashram.status = 0x001E00C280011111LL;
       break;
 
     case 0xF0: // read
       pi->flashram.mode = FLASHRAM_READ;
       pi->flashram.status = 0x11118004F0000000LL;
+      //pi->flashram.status = 0x1111'8004'f000'001dull;
+      //pi->flashram.status = 0;s
       break;
 
     default:
@@ -463,7 +503,8 @@ void HandleMenuWrite(void *menuInterface, DWORD addr, DWORD data);
 // Mapped read of SRAM
 int read_sram(void *opaque, uint32_t address, uint32_t *word) {
   
-  if (address >= 0x08040000 && address < (0x08040000 + 512)) {
+  if ((address >= 0x09000000 && address < (0x09000000 + 512+8*4)) ||
+      (address >= 0x08040000 && address < (0x08040000 + 512 + 8 * 4))) {
       HandleMenuRead(address, word);
   }
   fprintf(stderr, "SRAM read %08X %08X\n", address, *word);
@@ -473,7 +514,8 @@ int read_sram(void *opaque, uint32_t address, uint32_t *word) {
 // Mapped write of SRAM
 int write_sram(void *opaque, uint32_t address, uint32_t word, uint32_t dqm) {
   fprintf(stderr, "SRAM write %08X %08X %08X\n", address, word, dqm);
-  if (address >= 0x08040000 && address < (0x08040000 + 512)) {
+  if ((address >= 0x09000000 && address < (0x09000000 + 512+24)) || 
+      (address >= 0x08040000 && address < (0x08040000 + 512 + 8 * 4))) {
       struct pi_controller* pi = (struct pi_controller*)opaque;
       
       HandleMenuWrite(&(pi->menuInterface), address, word);
