@@ -291,7 +291,7 @@ __m128i rsp_vect_load_and_shuffle_operand(
   }
 
   #ifdef NDEBUG
-  __builtin_unreachable();
+  //__builtin_unreachable();
   #else
   //__builtin_trap();
  __debugbreak();

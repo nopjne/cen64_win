@@ -244,6 +244,7 @@ include_directories(${PROJECT_SOURCE_DIR}/os/common)
 include_directories(${ICONV_INCLUDE_DIR})
 #include_directories(${OPENAL_INCLUDE_DIR})
 include_directories(${OPENGL_INCLUDE_DIR})
+include_directories(${PROJECT_SOURCE_DIR}/ai)
 
 #
 # Create lists of files.
@@ -334,6 +335,7 @@ set(OS_SDL_SOURCES
 set(PI_SOURCES
   ${PROJECT_SOURCE_DIR}/pi/controller.c
   ${PROJECT_SOURCE_DIR}/pi/is_viewer.c
+  ${PROJECT_SOURCE_DIR}/menu_interface.cpp
 )
 
 set(RDP_SOURCES
