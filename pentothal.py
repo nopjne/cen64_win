@@ -6,7 +6,7 @@ import ctypes
 import time
 user32 = ctypes.windll.user32
 screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
-screensize = 11520,2160
+#screensize = 11520,2160
 
 print("size:" + str(screensize[0]) + " " + str(screensize[1]));
 
