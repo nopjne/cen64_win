@@ -28,7 +28,7 @@ int open_rom_file(const char *path, struct rom_file *file) {
   HANDLE hfile;
 
   // Open the file, get its size.
-  if ((hfile = CreateFile(path, GENERIC_READ, 0, NULL, OPEN_EXISTING,
+  if ((hfile = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
     FILE_FLAG_RANDOM_ACCESS, NULL)) == INVALID_HANDLE_VALUE)
     return -1;
 

@@ -296,7 +296,7 @@ int VR4300_TLBWR(struct vr4300 *vr4300,
   uint32_t page_mask = mask_reg(5, vr4300->regs[VR4300_CP0_REGISTER_PAGEMASK]);
   unsigned index = vr4300->regs[VR4300_CP0_REGISTER_WIRED] & 0x1F;
 
-  index = rand() % (32 - index) + index;
+  index = 666 % (32 - index) + index;
   tlb_write(&vr4300->cp0.tlb, index, entry_hi, entry_lo_0, entry_lo_1, page_mask);
 
   vr4300->cp0.page_mask[index] = (page_mask | 0x1FFF) >> 1;

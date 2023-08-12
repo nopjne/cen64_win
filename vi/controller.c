@@ -32,6 +32,70 @@ const char *vi_register_mnemonics[NUM_VI_REGISTERS] = {
 };
 #endif
 
+extern struct cen64_options* g_options;
+extern FILE* button_replay_file;
+extern FILE* button_trace_file;
+
+#if 0
+#pragma push(pack,0)
+typedef struct tagBITMAPFILEHEADER {
+    WORD  bfType;
+    DWORD bfSize;
+    WORD  bfReserved1;
+    WORD  bfReserved2;
+    DWORD bfOffBits;
+} BITMAPFILEHEADER, * LPBITMAPFILEHEADER, * PBITMAPFILEHEADER;
+
+typedef struct tagBITMAPINFOHEADER {
+    DWORD biSize;
+    LONG  biWidth;
+    LONG  biHeight;
+    WORD  biPlanes;
+    WORD  biBitCount;
+    DWORD biCompression;
+    DWORD biSizeImage;
+    LONG  biXPelsPerMeter;
+    LONG  biYPelsPerMeter;
+    DWORD biClrUsed;
+    DWORD biClrImportant;
+} BITMAPINFOHEADER, * LPBITMAPINFOHEADER, * PBITMAPINFOHEADER;
+
+typedef struct {
+    DWORD        bV5Size;
+    LONG         bV5Width;
+    LONG         bV5Height;
+    WORD         bV5Planes;
+    WORD         bV5BitCount;
+    DWORD        bV5Compression;
+    DWORD        bV5SizeImage;
+    LONG         bV5XPelsPerMeter;
+    LONG         bV5YPelsPerMeter;
+    DWORD        bV5ClrUsed;
+    DWORD        bV5ClrImportant;
+    DWORD        bV5RedMask;
+    DWORD        bV5GreenMask;
+    DWORD        bV5BlueMask;
+    DWORD        bV5AlphaMask;
+    DWORD        bV5CSType;
+    CIEXYZTRIPLE bV5Endpoints;
+    DWORD        bV5GammaRed;
+    DWORD        bV5GammaGreen;
+    DWORD        bV5GammaBlue;
+    DWORD        bV5Intent;
+    DWORD        bV5ProfileData;
+    DWORD        bV5ProfileSize;
+    DWORD        bV5Reserved;
+} BITMAPV5HEADER, * LPBITMAPV5HEADER, * PBITMAPV5HEADER;
+
+typedef struct tagRGBQUAD {
+    BYTE rgbBlue;
+    BYTE rgbGreen;
+    BYTE rgbRed;
+    BYTE rgbReserved;
+} RGBQUAD;
+#pragma pop
+#endif
+
 // Reads a word from the VI MMIO register space.
 int read_vi_regs(void *opaque, uint32_t address, uint32_t *word) {
   struct vi_controller *vi = (struct vi_controller *) opaque;
@@ -59,6 +123,11 @@ int read_vi_regs(void *opaque, uint32_t address, uint32_t *word) {
   return 0;
 }
 
+static char filename[256];
+BITMAPV5HEADER DIBheader;
+BITMAPFILEHEADER header;
+uint8_t tempBuffer[FRAMEBUF_SZ];
+DWORD Bitmask[4];
 // Advances the controller by one clock cycle.
 void vi_cycle(struct vi_controller *vi) {
   cen64_gl_window window;
@@ -105,6 +174,24 @@ void vi_cycle(struct vi_controller *vi) {
     cen64_mutex_lock(&window->event_mutex);
 
     if (unlikely(window->exit_requested)) {
+        if (g_options->button_state_trace_enabled != false) {
+            static uint8_t lastFrameInput[4];
+            if (button_trace_file == NULL) {
+                char string[265];
+                sprintf(string, "%s_button_trace.cbt", g_options->cart_file_name);
+                button_trace_file = fopen(string, "wb");
+            }
+
+            if (memcmp(lastFrameInput, bus->si->input, sizeof(bus->si->input)) != 0) {
+                uint64_t frameCount = vi->frame_count;
+                size_t written = fwrite(&frameCount, sizeof(frameCount), 1, button_trace_file);
+                size_t written1 = fwrite(vi->bus->si->input, sizeof(vi->bus->si->input), 1, button_trace_file);
+                assert(written != 0);
+                assert(written1 != 0);
+                memcpy(lastFrameInput, vi->bus->si->input, sizeof(vi->bus->si->input));
+                fflush(button_trace_file);
+            }
+        }
       cen64_mutex_unlock(&window->event_mutex);
       device_exit(vi->bus);
     }
@@ -135,18 +222,179 @@ void vi_cycle(struct vi_controller *vi) {
     cen64_mutex_unlock(&vi->window->render_mutex);
     cen64_gl_window_push_frame(window);
   }
-
-  else if (++(vi->frame_count) == 60) {
+  else if (((++vi->frame_count) % 60) == 0) {
     cen64_time current_time;
     float ns;
 
     get_time(&current_time);
     ns = compute_time_difference(&current_time, &vi->last_update_time);
     vi->last_update_time = current_time;
-    vi->frame_count = 0;
 
     printf("VI/s: %.2f\n", (60 / (ns / NS_PER_SEC)));
   }
+
+  // If comparison is enabled check if there is a reference.
+  if (g_options->ref_compare_enabled != false) {
+        sprintf(filename, "ref\\%s_frame%05d.bmp", g_options->cart_file_name, vi->frame_count);
+        FILE* file = fopen(filename, "rb");
+        if (file != NULL) {
+            // Compare the bmp, skip to the data.
+            bool outputOnMismatch = false;
+            fread(&header, sizeof(header), 1, file);
+            fread(&DIBheader, sizeof(DIBheader), 1, file);
+            fread(&Bitmask, sizeof(Bitmask), 1, file);
+            if ((sizeof(header) + sizeof(DIBheader) + sizeof(Bitmask)) == header.bfOffBits) {
+                uint32_t datasize = (vi->render_area.width * vi->render_area.height * 2);
+                if (datasize == (DIBheader.bV5Width * (-DIBheader.bV5Height) * (DIBheader.bV5BitCount / 8))) {
+                    fread(tempBuffer, datasize, 1, file);
+                    if (memcmp(tempBuffer, window->frame_buffer, datasize) != 0) {
+                        outputOnMismatch = true;
+                    }
+                } else {
+                    // mismatch on image dimensions.
+                }
+            }
+            fclose(file);
+
+            // Incase there is a difference, dump the reference, the currently rendered frame and the diff to a .bmp file of
+            // 3x height.
+            if (outputOnMismatch != false) {
+                sprintf(filename, "%s_mismatch%i.bmp", g_options->cart_file_name, vi->frame_count);
+                file = fopen(filename, "wb");
+                if (file != NULL) {
+                    // Generate header and output.
+                    BITMAPV5HEADER DIBheader = { 0 };
+                    BITMAPFILEHEADER header = { 0 };
+                    DWORD Bitmask[4];
+                    header.bfType = 'MB';
+                    header.bfSize = sizeof(header);
+                    header.bfOffBits = sizeof(header) + sizeof(DIBheader) + sizeof(Bitmask);
+                    DIBheader.bV5Size = sizeof(DIBheader);
+                    DIBheader.bV5Width = vi->render_area.width;
+                    DIBheader.bV5Height = -((int)vi->render_area.height * 3);
+                    DIBheader.bV5Planes = 1;
+                    DIBheader.bV5BitCount = 16;
+                    DIBheader.bV5Compression = BI_BITFIELDS;
+                    DIBheader.bV5SizeImage = 0;
+                    //                         ggbbbbbarrrrrggg
+                    DIBheader.bV5BlueMask = 0b0011111000000000;
+                    DIBheader.bV5GreenMask = 0b1100000000000111;
+                    DIBheader.bV5RedMask = 0b0000000011111000;
+                    DIBheader.bV5AlphaMask = 0b0000000100000000;
+
+                    Bitmask[0] = 0b0000000011111000;
+                    Bitmask[1] = 0b1100000000000111;
+                    Bitmask[2] = 0b0011111000000000;
+                    Bitmask[3] = 0b0000000100000000;
+                    fwrite(&header, sizeof(header), 1, file);
+                    fwrite(&DIBheader, sizeof(DIBheader), 1, file);
+                    fwrite(&Bitmask, sizeof(Bitmask), 1, file);
+                    fwrite(&tempBuffer, (vi->render_area.width* vi->render_area.height * 2), 1, file);
+                    fwrite(&window->frame_buffer, (vi->render_area.width * vi->render_area.height * 2), 1, file);
+                    
+                    for (uint32_t i = 0; i < (vi->render_area.width * vi->render_area.height); i += 1) {
+                        uint16_t color = 0;
+                        uint16_t *ref = tempBuffer;
+                        uint16_t *render = window->frame_buffer;
+                        if (ref[i] != render[i]) {
+                            color = 0xFFFF & ~0b0000000100000000;
+                        }
+
+                        fwrite(&color, sizeof(color), 1, file);
+                    }
+                    fclose(file);
+                }
+                outputOnMismatch = false;
+            }
+        }
+        
+  }
+
+  bool dump_enabled = g_options->ref_dump_enabled;
+  uint32_t dump_interval = 88;
+  // If dumping is enabled output the frame_buffer.
+  if ((dump_enabled != false) && ((vi->frame_count % dump_interval) == 0) && (vi->render_area.width != 0)) {
+      sprintf(filename, "%s_frame%05d.bmp", g_options->cart_file_name, vi->frame_count);
+      FILE* file = fopen(filename, "wb");
+      if (file != NULL) {
+          // Generate header and output.
+          header.bfType = 'MB';
+          header.bfSize = sizeof(header);
+          header.bfOffBits = sizeof(header) + sizeof(DIBheader) + sizeof(Bitmask);
+          DIBheader.bV5Size = sizeof(DIBheader);
+          DIBheader.bV5Width = vi->render_area.width;
+          DIBheader.bV5Height = -((int)vi->render_area.height);
+          DIBheader.bV5Planes = 1;
+          DIBheader.bV5BitCount = 16;
+          DIBheader.bV5Compression = BI_BITFIELDS;
+          DIBheader.bV5SizeImage = 0;
+          //                         ggbbbbbarrrrrggg
+          DIBheader.bV5BlueMask =  0b0011111000000000;
+          DIBheader.bV5GreenMask = 0b1100000000000111;
+          DIBheader.bV5RedMask =   0b0000000011111000;
+          DIBheader.bV5AlphaMask = 0b0000000100000000;
+          
+          Bitmask[0] = 0b0000000011111000;
+          Bitmask[1] = 0b1100000000000111;
+          Bitmask[2] = 0b0011111000000000;
+          Bitmask[3] = 0b0000000100000000;
+          fwrite(&header, sizeof(header), 1, file);
+          fwrite(&DIBheader, sizeof(DIBheader), 1, file);
+          fwrite(&Bitmask, sizeof(Bitmask), 1, file);
+          fwrite(&window->frame_buffer, (vi->render_area.width * vi->render_area.height * 2), 1, file);
+          fclose(file);
+      }
+  }
+
+  // Record input
+  bool RecordInput = g_options->button_state_trace_enabled;
+  if (RecordInput != false) {
+    static uint8_t lastFrameInput[4];
+    if (button_trace_file == NULL) {
+        char string[265];
+        sprintf(string, "%s_button_trace.cbt", g_options->cart_file_name);
+        button_trace_file = fopen(string, "wb");
+    }
+
+    if (memcmp(lastFrameInput, bus->si->input, sizeof(bus->si->input)) != 0) {
+        uint64_t frameCount = vi->frame_count;
+        size_t written = fwrite(&frameCount, sizeof(frameCount), 1, button_trace_file);
+        size_t written1 = fwrite(vi->bus->si->input, sizeof(vi->bus->si->input), 1, button_trace_file);
+        assert(written != 0);
+        assert(written1 != 0);
+        memcpy(lastFrameInput, vi->bus->si->input, sizeof(vi->bus->si->input));
+        fflush(button_trace_file);
+    }
+  }
+
+  // Replay input
+  bool ReplayInput = g_options->button_state_replay_enabled;
+  if (ReplayInput != false) {
+      static uint64_t frameCount = 0;
+      if (button_replay_file == NULL) {
+          char string[265];
+          sprintf(string, "ref\\%s_button_trace.cbt", g_options->cart_file_name);
+          button_replay_file = fopen(string, "rb");
+          if (button_replay_file == NULL) {
+            g_options->button_state_replay_enabled = false;
+          } else {
+            fread(&frameCount, sizeof(frameCount), 1, button_replay_file);
+          }
+      }
+
+      if (button_replay_file != NULL) {
+        static uint8_t lastFrameInput[4];
+        if ((frameCount - 1) <= vi->frame_count) {
+          if (feof(button_replay_file)) {
+              ExitProcess(0);
+          }
+          fread(&(vi->bus->si->input[0]), sizeof(vi->bus->si->input), 1, button_replay_file);
+          fread(&frameCount, sizeof(frameCount), 1, button_replay_file);
+        }
+      }
+  }
+
+  vi->frame_count += 1;
 }
 
 // Initializes the VI.

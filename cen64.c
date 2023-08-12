@@ -45,6 +45,10 @@ int main(int argc, const char** argv) {
 }
 
 struct rom_file ddipl, ddrom, pifrom, cart;
+char g_cart_filename[265];
+struct cen64_options *g_options;
+FILE* button_replay_file = NULL;
+FILE* button_trace_file = NULL;
 
 //int cen64_main(int argc, const char **argv) {
 int cen64_main(int argc, const char** argv) {
@@ -62,6 +66,8 @@ int cen64_main(int argc, const char** argv) {
   struct save_file flashram;
   struct is_viewer is, *is_in = NULL;
 
+  g_options = &options;
+  options.cart_file_name = g_cart_filename;
 #ifdef _WIN32
   //check_start_from_explorer();
 #endif
@@ -92,6 +98,15 @@ int cen64_main(int argc, const char** argv) {
     print_command_line_usage(argv[0]);
     cen64_alloc_cleanup();
     return EXIT_FAILURE;
+  }
+
+  // determine cart filename
+  size_t cart_path_len = strlen(options.cart_path);
+  for (size_t i = cart_path_len; i > 0; i -= 1) {
+      if ((options.cart_path[i - 1] == '\\') || (options.cart_path[i - 1] == '/')) {
+          memcpy(options.cart_file_name, &options.cart_path[i], (cart_path_len - 4 - i));
+          break;
+      }
   }
 
   memset(&ddipl, 0, sizeof(ddipl));
@@ -232,6 +247,16 @@ int cen64_main(int argc, const char** argv) {
       if (options.debugger_addr) {
         debugger = gdb_alloc();
         gdb_init(debugger, device, options.debugger_addr);
+      }
+
+      hide_console();
+
+      if (button_trace_file != NULL) {
+          fclose(button_trace_file);
+      }
+
+      if (button_replay_file != NULL) {
+          fclose(button_replay_file);
       }
 
       device->multithread = options.multithread;

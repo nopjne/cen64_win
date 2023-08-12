@@ -149,6 +149,33 @@ int parse_options(struct cen64_options *options, int argc, const char *argv[]) {
       options->sram_size = 0x20000;
     }
 
+    else if (!strcmp(argv[i], "-dumpref")) {
+      options->ref_dump_enabled = true;
+    }
+
+    else if (!strcmp(argv[i], "-compref")) {
+      options->ref_compare_enabled = true;
+    }
+
+    else if (!strcmp(argv[i], "-buttontrace")) {
+      options->button_state_trace_enabled = true;
+    }
+
+    else if (!strcmp(argv[i], "-buttonreplay")) {
+      options->button_state_replay_enabled = true;
+    }
+
+    else if (!strcmp(argv[i], "-windowoffset")) {
+        if ((i + 1) >= (argc - 2)) {
+            printf("-windowoffset requires 2 parameters X and Y.\n\n");
+            return 1;
+        }
+
+        options->window_offset_x = atoi(argv[++i]);
+        options->window_offset_y = atoi(argv[++i]);
+    }
+    
+
     else if (!strcmp(argv[i], "-flash")) {
       if ((i + 1) >= (argc - 1)) {
         printf("-flash requires a path to the save file.\n\n");
@@ -290,6 +317,11 @@ void print_command_line_usage(const char *invokation_string) {
       "  -noaudio                   : Run emulator without audio.\n"
       "  -novideo                   : Run emulator without video.\n"
       "  -is-viewer                 : Show IS Viewer 64 output.\n"
+      "  -dumpref                   : Dump frames at 88 frame interval (recompile to change interval).\n"
+      "  -compref                   : Compare frames with frames in .\\ref dir.\n"
+      "  -buttontrace               : Record player input and save to a file driven by cart name.\n"
+      "  -buttonreplay              : Replay player input from \\ref driven by cart name.\n"
+      "  -windowoffset X Y          : Specify CEN64 window top left location coordinates.\n"
       "\n"
       "Controller Options:\n"
       "  -controller num=<1-4>      : Controller with no pak.\n"
@@ -312,7 +344,7 @@ void print_command_line_usage(const char *invokation_string) {
   );
 
 #ifdef _WIN32
-//  hide_console();
+  //hide_console();
 #endif
 }
 

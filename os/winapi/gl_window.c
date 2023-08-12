@@ -76,16 +76,24 @@ bool cen64_gl_window_pump_events(struct vi_controller *vi,
       cen64_gl_window window = vi->window;
 
       cen64_mutex_lock(&window->render_mutex);
-
+#if 0
+      uint16_t *fb = window->frame_buffer;
+      uint16_t color = 0b0'11000'00100'00100;
+      //                 g gbbbb barrr rrggg
+      for (int i = 0; i < 280 * 237; i += 1) {
+        fb[i] = color;
+      }
+#endif
       gl_window_render_frame(vi, window->frame_buffer,
         window->frame_hres, window->frame_vres,
         window->frame_hskip, window->frame_type);
+      
 
       cen64_mutex_unlock(&window->render_mutex);
 
       // Update the window title every 60 VIs
       // to display the current VI/s rate.
-      if (++(*frame_count) == 60) {
+      if (((++*frame_count) % 60) == 0) {
         char title[128];
         cen64_time current_time;
         float ns;
@@ -94,7 +102,6 @@ bool cen64_gl_window_pump_events(struct vi_controller *vi,
         get_time(&current_time);
         ns = compute_time_difference(&current_time, last_update_time);
         *last_update_time = current_time;
-        *frame_count = 0;
 
         sprintf(title,
           "CEN64 ["CEN64_COMPILER" - "CEN64_ARCH_DIR"/"CEN64_ARCH_SUPPORT"]"
@@ -113,6 +120,7 @@ bool cen64_gl_window_pump_events(struct vi_controller *vi,
   return exit_requested;
 }
 
+extern struct cen64_options* g_options;
 cen64_gl_window cen64_gl_window_create(
   cen64_gl_display display, cen64_gl_screen screen,
   const cen64_gl_config *config, const char *title) {
@@ -126,10 +134,10 @@ cen64_gl_window cen64_gl_window_create(
   if ((window = malloc(sizeof(*window))) == NULL)
     return CEN64_GL_WINDOW_BAD;
 
-  window_rect.left = 0;
-  window_rect.right = 640;
-  window_rect.top = 0;
-  window_rect.bottom = 474;
+  window_rect.left = g_options->window_offset_x;
+  window_rect.right = window_rect.left + 640;
+  window_rect.top = g_options->window_offset_y;
+  window_rect.bottom = window_rect.top + 474;
 
   window->hinstance = GetModuleHandle(NULL);
   window->pixel_format = config->pixel_format;
@@ -157,7 +165,7 @@ cen64_gl_window cen64_gl_window_create(
   AdjustWindowRectEx(&window_rect, dw_style, FALSE, dw_ex_style);
 
   if ((window->hwnd = CreateWindowEx(dw_ex_style, "CEN64", title,
-    dw_style | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, 0, 0,
+    dw_style | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, window_rect.left, window_rect.top,
     window_rect.right - window_rect.left, window_rect.bottom - window_rect.top,
     NULL, NULL, window->hinstance, NULL)) == NULL) {
     UnregisterClass("CEN64", window->hinstance);

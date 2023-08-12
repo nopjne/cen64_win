@@ -28,8 +28,8 @@ void check_start_from_explorer(void) {
 
 // "Hides" the console window (after waiting for input).
 void hide_console(void) {
-  printf("\n");
-  system("PAUSE");
+  //printf("\n");
+  //system("PAUSE");
 
   FreeConsole();
 }

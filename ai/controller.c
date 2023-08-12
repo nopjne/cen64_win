@@ -85,7 +85,7 @@ void ai_dma(struct ai_controller *ai) {
       // seems to sound better than what we had before.
       if (ai->ctx.cur_frequency != freq) {
         if (val == 0) {
-          printf("OpenAL: Switching context buffer frequency to: %u\n", freq);
+          //printf("OpenAL: Switching context buffer frequency to: %u\n", freq);
           ai_switch_frequency(&ai->ctx, freq);
         }
       }

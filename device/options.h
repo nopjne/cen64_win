@@ -18,6 +18,7 @@ struct cen64_options {
   const char *pifrom_path;
   const char *cart_path;
   const char *debugger_addr;
+  const char *cart_file_name;
 
   const char *eeprom_path;
   size_t eeprom_size;
@@ -25,6 +26,8 @@ struct cen64_options {
   size_t sram_size;
   const char *flashram_path;
   int is_viewer_output;
+  uint32_t window_offset_x;
+  uint32_t window_offset_y;
 
   struct controller *controller;
 
@@ -33,6 +36,10 @@ struct cen64_options {
   bool multithread;
   bool no_audio;
   bool no_video;
+  bool ref_dump_enabled;
+  bool ref_compare_enabled;
+  bool button_state_trace_enabled;
+  bool button_state_replay_enabled;
 };
 
 extern const struct cen64_options default_cen64_options;
