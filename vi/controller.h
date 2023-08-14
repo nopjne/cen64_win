@@ -47,6 +47,7 @@ struct render_area {
 
 struct vi_controller {
   struct bus_controller *bus;
+  uint32_t snes_frame;
   uint32_t regs[NUM_VI_REGISTERS];
 
   uint32_t counter;

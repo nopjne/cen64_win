@@ -235,7 +235,7 @@ void vi_cycle(struct vi_controller *vi) {
 
   // If comparison is enabled check if there is a reference.
   if (g_options->ref_compare_enabled != false) {
-        sprintf(filename, "ref\\%s_frame%05d.bmp", g_options->cart_file_name, vi->frame_count);
+        sprintf(filename, "ref\\%s_frame%05d.bmp", g_options->cart_file_name, vi->snes_frame);
         FILE* file = fopen(filename, "rb");
         if (file != NULL) {
             // Compare the bmp, skip to the data.
@@ -259,7 +259,7 @@ void vi_cycle(struct vi_controller *vi) {
             // Incase there is a difference, dump the reference, the currently rendered frame and the diff to a .bmp file of
             // 3x height.
             if (outputOnMismatch != false) {
-                sprintf(filename, "%s_mismatch%i.bmp", g_options->cart_file_name, vi->frame_count);
+                sprintf(filename, "%s_mismatch%i.bmp", g_options->cart_file_name, vi->snes_frame);
                 file = fopen(filename, "wb");
                 if (file != NULL) {
                     // Generate header and output.
@@ -313,8 +313,8 @@ void vi_cycle(struct vi_controller *vi) {
   bool dump_enabled = g_options->ref_dump_enabled;
   uint32_t dump_interval = 88;
   // If dumping is enabled output the frame_buffer.
-  if ((dump_enabled != false) && ((vi->frame_count % dump_interval) == 0) && (vi->render_area.width != 0)) {
-      sprintf(filename, "%s_frame%05d.bmp", g_options->cart_file_name, vi->frame_count);
+  if ((dump_enabled != false) && ((vi->snes_frame % dump_interval) == 0) && (vi->render_area.width != 0)) {
+      sprintf(filename, "%s_frame%05d.bmp", g_options->cart_file_name, vi->snes_frame);
       FILE* file = fopen(filename, "wb");
       if (file != NULL) {
           // Generate header and output.
@@ -357,7 +357,7 @@ void vi_cycle(struct vi_controller *vi) {
     }
 
     if (memcmp(lastFrameInput, bus->si->input, sizeof(bus->si->input)) != 0) {
-        uint64_t frameCount = vi->frame_count;
+        uint64_t frameCount = vi->snes_frame;
         size_t written = fwrite(&frameCount, sizeof(frameCount), 1, button_trace_file);
         size_t written1 = fwrite(vi->bus->si->input, sizeof(vi->bus->si->input), 1, button_trace_file);
         assert(written != 0);
@@ -384,7 +384,7 @@ void vi_cycle(struct vi_controller *vi) {
 
       if (button_replay_file != NULL) {
         static uint8_t lastFrameInput[4];
-        if ((frameCount - 1) <= vi->frame_count) {
+        if ((frameCount - 1) <= vi->snes_frame) {
           if (feof(button_replay_file)) {
               ExitProcess(0);
           }
@@ -433,6 +433,15 @@ int write_vi_regs(void *opaque, uint32_t address, uint32_t word, uint32_t dqm) {
 
     vi->regs[reg] &= ~dqm;
     vi->regs[reg] |= word;
+  }
+
+  else if (VI_ORIGIN_REG) {
+      // This is a hack to hook the Sodium64 frame ptr swap.
+      vi->snes_frame += 1;
+
+      // Continue regular execution.
+      vi->regs[reg] &= ~dqm;
+      vi->regs[reg] |= word;
   }
 
   else {
